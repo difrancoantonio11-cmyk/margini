@@ -1,0 +1,1346 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Margini">
+<meta name="theme-color" content="#2340D8">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<title>Margini</title>
+<style>
+:root{
+  --bg:#EEF0F3; --surface:#FFFFFF; --surface-2:#F5F6F8; --ink:#14171C; --ink-2:#5A6270; --ink-3:#8A929E;
+  --line:#D9DDE3; --accent:#2340D8; --accent-ink:#FFFFFF; --accent-soft:#E3E8FF;
+  --danger:#C2255C; --paper:#FFFFFF;
+  --hl-yellow:#FFD43B; --hl-green:#4CD98A; --hl-blue:#5AB4FA; --hl-pink:#FF7AB8;
+  --shadow:0 8px 28px rgba(20,23,28,.14); --shadow-s:0 2px 8px rgba(20,23,28,.08);
+  --r:14px; --bar:56px;
+  --sans:-apple-system,"SF Pro Text",system-ui,"Segoe UI",Roboto,sans-serif;
+  --serif:"New York","Iowan Old Style",Georgia,serif;
+  --st:env(safe-area-inset-top,0px); --sb:env(safe-area-inset-bottom,0px);
+  --sl:env(safe-area-inset-left,0px); --sr:env(safe-area-inset-right,0px);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#101216; --surface:#1A1D23; --surface-2:#22262D; --ink:#E7EAEE; --ink-2:#9AA3AF; --ink-3:#6C7480;
+    --line:#2E333B; --accent:#8EA2FF; --accent-ink:#0B1030; --accent-soft:#232B4D; --danger:#FF6B9A;
+    --shadow:0 8px 28px rgba(0,0,0,.5); --shadow-s:0 2px 8px rgba(0,0,0,.35);
+    color-scheme:dark;
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:16px/1.45 var(--sans);overflow:hidden;overscroll-behavior:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+input,textarea{font:inherit;color:var(--ink)}
+svg.i{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+[hidden]{display:none!important}
+
+.view{position:fixed;inset:0;display:flex;flex-direction:column}
+.bar{flex:none;display:flex;align-items:center;gap:6px;min-height:calc(var(--bar) + var(--st));padding:var(--st) calc(10px + var(--sr)) 0 calc(10px + var(--sl));background:var(--surface);border-bottom:1px solid var(--line);-webkit-user-select:none;user-select:none;z-index:5}
+.bar h1{font-size:20px;margin:0 8px 0 6px;letter-spacing:-.01em}
+.bar .title{flex:1;min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px}
+.ib{width:44px;height:44px;display:grid;place-items:center;border-radius:12px;color:var(--ink)}
+.ib:active,.ib.on{background:var(--accent-soft);color:var(--accent)}
+.btn{height:40px;padding:0 16px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line);font-weight:600;display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.btn.danger{color:var(--danger)}
+.btn:active{transform:scale(.97)}
+.spacer{flex:1}
+.pill{font-size:13px;color:var(--ink-2);background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:6px 12px;white-space:nowrap;font-variant-numeric:tabular-nums}
+
+.seg{display:flex;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:3px;gap:2px}
+.seg button{height:34px;padding:0 14px;border-radius:9px;font-weight:600;color:var(--ink-2);font-size:15px}
+.seg button.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow-s)}
+
+.scroll{flex:1;overflow:auto;-webkit-overflow-scrolling:touch}
+.pad{padding:18px calc(16px + var(--sr)) calc(28px + var(--sb)) calc(16px + var(--sl))}
+
+/* libreria */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:22px 18px}
+.card{position:relative;display:flex;flex-direction:column;gap:8px;text-align:left;min-width:0}
+.cover{aspect-ratio:3/4.2;border-radius:10px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow-s);overflow:hidden;display:grid;place-items:center;position:relative}
+.cover img{width:100%;height:100%;object-fit:cover}
+.cover .ph{padding:14px;font:600 15px/1.25 var(--serif);color:var(--ink-2);text-align:center;word-break:break-word}
+.cover .tag{position:absolute;left:8px;bottom:8px;font:700 10px var(--sans);letter-spacing:.08em;background:var(--ink);color:var(--surface);padding:3px 6px;border-radius:5px}
+.card .t{font-weight:600;font-size:14px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card .m{font-size:12px;color:var(--ink-3)}
+.card .more{position:absolute;top:6px;right:6px;width:34px;height:34px;border-radius:10px;background:color-mix(in srgb,var(--surface) 88%,transparent);display:grid;place-items:center;box-shadow:var(--shadow-s)}
+.empty{max-width:440px;margin:12vh auto 0;text-align:center;color:var(--ink-2)}
+.empty h2{color:var(--ink);font-size:22px;margin:16px 0 8px}
+.empty p{margin:0 0 20px}
+.drop{position:fixed;inset:12px;border:3px dashed var(--accent);border-radius:20px;background:color-mix(in srgb,var(--accent-soft) 80%,transparent);display:grid;place-items:center;font-weight:700;font-size:22px;color:var(--accent);z-index:50;pointer-events:none}
+
+.search{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:0 12px;height:44px;margin-bottom:16px}
+.search input{flex:1;border:0;background:none;outline:none;height:100%;font-size:16px}
+.group{margin-bottom:22px}
+.group h3{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin:0 0 8px 4px}
+.list{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.row{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-top:1px solid var(--line);width:100%;text-align:left}
+.row:first-child{border-top:0}
+.row:active{background:var(--surface-2)}
+.row .sw{width:5px;align-self:stretch;border-radius:3px;flex:none;min-height:20px}
+.row .body{flex:1;min-width:0}
+.row .q{font:15px/1.4 var(--serif);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.row .n{font-size:14px;color:var(--ink-2);margin-top:4px;white-space:pre-wrap;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.row .s{font-size:12px;color:var(--ink-3);margin-top:4px;display:flex;gap:10px;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;gap:3px;color:var(--accent);font-weight:600}
+.badge svg.i{width:14px;height:14px}
+
+/* lettore */
+#readWrap{flex:1;position:relative;display:flex;min-height:0}
+#pdfScroll{flex:1;overflow:auto;position:relative;background:var(--bg);touch-action:pan-x pan-y;-webkit-overflow-scrolling:touch}
+#pdfPages{transform-origin:0 0;padding:16px 0 calc(40px + var(--sb))}
+.page{position:relative;margin:0 auto 14px;background:#fff;box-shadow:var(--shadow-s);overflow:hidden}
+.page canvas{position:absolute;inset:0;display:block}
+.hlLayer{position:absolute;inset:0;pointer-events:none}
+.hlLayer .hl{position:absolute;mix-blend-mode:multiply;opacity:.5;border-radius:2px}
+.hlLayer .hl.flash{outline:3px solid var(--accent);outline-offset:2px;opacity:.75}
+.hlLayer .mark{position:absolute;right:6px;width:22px;height:30px;background:var(--accent);clip-path:polygon(0 0,100% 0,100% 100%,50% 75%,0 100%);opacity:.9}
+.textLayer{position:absolute;inset:0;overflow:hidden;line-height:1;text-size-adjust:none;-webkit-text-size-adjust:none;forced-color-adjust:none;transform-origin:0 0;z-index:2}
+.textLayer span,.textLayer br{color:transparent;position:absolute;white-space:pre;cursor:text;transform-origin:0% 0%}
+.textLayer ::selection{background:rgba(35,64,216,.28)}
+.textLayer .endOfContent{display:block;position:absolute;inset:100% 0 0;z-index:-1;cursor:default;user-select:none}
+#epubBox{flex:1;min-width:0;background:var(--paper)}
+@media (prefers-color-scheme:dark){#epubBox{background:#16181C}}
+#side{flex:none;width:340px;border-left:1px solid var(--line);background:var(--surface);display:flex;flex-direction:column;min-height:0}
+#side header{display:flex;align-items:center;padding:10px 12px 6px 16px;gap:8px}
+#side header b{flex:1}
+#side .scroll{padding:0 12px calc(16px + var(--sb))}
+#side .row{border-radius:12px;border:1px solid var(--line);margin-bottom:8px;background:var(--surface)}
+#side .row .q{-webkit-line-clamp:4}
+@media (max-width:820px){
+  #side{position:absolute;right:0;top:0;bottom:0;width:min(360px,92vw);box-shadow:var(--shadow);z-index:6}
+}
+#selBar{position:fixed;z-index:30;display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:999px;padding:6px 8px;-webkit-user-select:none;user-select:none}
+.dot{width:34px;height:34px;border-radius:50%;border:3px solid var(--surface);box-shadow:0 0 0 1px var(--line)}
+.dot.on{box-shadow:0 0 0 2px var(--ink)}
+#selBar .sep{width:1px;height:26px;background:var(--line);margin:0 2px}
+#selBar .tb{height:36px;padding:0 12px;border-radius:999px;font-weight:600;display:flex;align-items:center;gap:6px;color:var(--accent)}
+
+/* mappa */
+#mapStage{flex:1;position:relative;overflow:hidden;touch-action:none;background:
+  radial-gradient(circle,var(--line) 1px,transparent 1.2px) 0 0/24px 24px,var(--bg);-webkit-user-select:none;user-select:none}
+#world{position:absolute;left:0;top:0;transform-origin:0 0}
+#edges{position:absolute;left:-50000px;top:-50000px;width:100000px;height:100000px;overflow:visible;pointer-events:none}
+#edges .e{stroke:var(--ink-3);stroke-width:2.2;fill:none}
+#edges .e.sel{stroke:var(--accent);stroke-width:3.5}
+#edges .hit{stroke:transparent;stroke-width:22;fill:none;pointer-events:stroke}
+#edges text{font:600 13px var(--sans);fill:var(--ink-2);paint-order:stroke;stroke:var(--bg);stroke-width:6px;stroke-linejoin:round;text-anchor:middle;dominant-baseline:middle;pointer-events:none}
+.mnode{position:absolute;transform:translate(-50%,-50%);width:240px;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-s);padding:10px 12px 10px 16px;overflow:hidden;touch-action:none}
+.mnode .bar-c{position:absolute;left:0;top:0;bottom:0;width:6px}
+.mnode .q{font:14px/1.4 var(--serif);display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden}
+.mnode .n{font-size:13px;color:var(--ink-2);margin-top:6px;white-space:pre-wrap;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+.mnode .src{font-size:11px;color:var(--ink-3);margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mnode.k-text{width:auto;min-width:120px;max-width:280px;padding:12px 16px}
+.mnode.k-text .t{font-weight:600;font-size:15px;white-space:pre-wrap}
+.mnode.k-page .p{display:flex;gap:8px;align-items:center;font-weight:600}
+.mnode.sel{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 35%,transparent),var(--shadow)}
+.mnode.src-link{border-color:var(--accent);border-style:dashed;border-width:2px}
+.floatbar{position:absolute;left:50%;bottom:calc(18px + var(--sb));transform:translateX(-50%);display:flex;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:6px;box-shadow:var(--shadow);max-width:calc(100vw - 24px);overflow-x:auto;z-index:4}
+.floatbar .fb{height:44px;padding:0 14px;border-radius:12px;display:flex;align-items:center;gap:8px;font-weight:600;white-space:nowrap}
+.floatbar .fb:active{background:var(--accent-soft)}
+.floatbar .fb.acc{color:var(--accent)}
+.floatbar .fb.dng{color:var(--danger)}
+.hint{position:absolute;left:50%;top:14px;transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:12px;font-weight:600;font-size:14px;z-index:4;white-space:nowrap}
+
+/* fogli */
+#sheetBack{position:fixed;inset:0;background:rgba(10,12,16,.38);z-index:40;display:flex;align-items:flex-end;justify-content:center}
+@media (min-width:700px){#sheetBack{align-items:center}}
+.sheet{background:var(--surface);width:min(560px,100%);max-height:min(86vh,760px);border-radius:20px 20px 0 0;box-shadow:var(--shadow);display:flex;flex-direction:column;padding-bottom:var(--sb)}
+@media (min-width:700px){.sheet{border-radius:20px;padding-bottom:0}}
+.sheet>header{display:flex;align-items:center;padding:12px 10px 4px 20px;gap:8px}
+.sheet>header b{flex:1;font-size:17px}
+.sheet .sbody{overflow:auto;padding:6px 20px 20px}
+.quote{font:16px/1.5 var(--serif);border-left:5px solid var(--hl-yellow);padding:4px 0 4px 14px;margin:6px 0 14px;white-space:pre-wrap;max-height:30vh;overflow:auto}
+.lbl{font-size:13px;font-weight:700;color:var(--ink-3);letter-spacing:.05em;text-transform:uppercase;margin:16px 0 8px}
+textarea.note,input.txt{width:100%;border:1px solid var(--line);background:var(--surface-2);border-radius:12px;padding:12px;font-size:16px;outline:none}
+textarea.note{min-height:120px;resize:vertical;line-height:1.45}
+textarea.note:focus,input.txt:focus{border-color:var(--accent)}
+.colors{display:flex;gap:10px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.prow{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px}
+.prow .body{flex:1;min-width:0}
+.prow .q{font:14px/1.35 var(--serif);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.prow .s{font-size:12px;color:var(--ink-3);margin-top:2px}
+.prow .lb{font-size:12px;color:var(--accent);font-weight:600}
+.muted{color:var(--ink-3);font-size:14px}
+.menu .mi{display:flex;align-items:center;gap:12px;width:100%;padding:14px 4px;border-top:1px solid var(--line);font-weight:600;text-align:left}
+.menu .mi:first-child{border-top:0}
+.menu .mi small{display:block;font-weight:400;color:var(--ink-3);font-size:13px}
+
+#toast{position:fixed;left:50%;bottom:calc(22px + var(--sb));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:12px 18px;border-radius:14px;font-weight:600;font-size:14px;z-index:60;display:flex;gap:14px;align-items:center;max-width:calc(100vw - 32px);box-shadow:var(--shadow)}
+#toast button{color:var(--hl-yellow);font-weight:700}
+@media (prefers-reduced-motion:no-preference){
+  .sheet{animation:up .22s ease-out}
+  @keyframes up{from{transform:translateY(24px);opacity:0}}
+}
+</style>
+</head>
+<body>
+
+<!-- LIBRERIA -->
+<section id="v-lib" class="view">
+  <header class="bar">
+    <h1>Margini</h1>
+    <div class="seg" id="tabs">
+      <button data-tab="books" class="on">Libri</button>
+      <button data-tab="notes">Appunti</button>
+      <button data-tab="maps">Mappe</button>
+    </div>
+    <span class="spacer"></span>
+    <button class="btn primary" id="btnImport"><svg class="i"><use href="#i-plus"/></svg><span>Importa</span></button>
+    <button class="ib" id="btnMenu" aria-label="Backup e impostazioni"><svg class="i"><use href="#i-more"/></svg></button>
+  </header>
+  <div class="scroll" id="libScroll"><div class="pad" id="libBody"></div></div>
+</section>
+
+<!-- LETTORE -->
+<section id="v-read" class="view" hidden>
+  <header class="bar">
+    <button class="ib" id="readBack" aria-label="Indietro"><svg class="i"><use href="#i-back"/></svg></button>
+    <div class="title" id="readTitle"></div>
+    <button class="pill" id="pageInfo"></button>
+    <button class="ib" id="zOut" aria-label="Rimpicciolisci"><svg class="i"><use href="#i-minus"/></svg></button>
+    <button class="ib" id="zIn" aria-label="Ingrandisci"><svg class="i"><use href="#i-plus"/></svg></button>
+    <button class="ib" id="btnMark" aria-label="Segna questa pagina"><svg class="i"><use href="#i-mark"/></svg></button>
+    <button class="ib" id="btnSide" aria-label="Appunti del libro"><svg class="i"><use href="#i-list"/></svg></button>
+  </header>
+  <div id="readWrap">
+    <div id="pdfScroll" hidden><div id="pdfPages"></div></div>
+    <div id="epubBox" hidden></div>
+    <aside id="side" hidden>
+      <header><b>Appunti del libro</b><button class="ib" id="sideClose" aria-label="Chiudi"><svg class="i"><use href="#i-x"/></svg></button></header>
+      <div class="scroll" id="sideList"></div>
+    </aside>
+  </div>
+</section>
+
+<!-- MAPPA -->
+<section id="v-map" class="view" hidden>
+  <header class="bar">
+    <button class="ib" id="mapBack" aria-label="Indietro"><svg class="i"><use href="#i-back"/></svg></button>
+    <button class="title" id="mapName" style="text-align:left"></button>
+    <button class="ib" id="mapFit" aria-label="Inquadra tutto"><svg class="i"><use href="#i-fit"/></svg></button>
+  </header>
+  <div id="mapStage">
+    <div id="world"><svg id="edges"><g id="edgesG" transform="translate(50000,50000)"></g></svg><div id="nodes"></div></div>
+    <div class="hint" id="linkHint" hidden></div>
+    <div class="floatbar" id="mapActions"></div>
+  </div>
+</section>
+
+<div id="selBar" hidden></div>
+<div id="sheetBack" hidden></div>
+<div id="toast" hidden></div>
+<div class="drop" id="drop" hidden>Rilascia qui PDF, EPUB o ZIP</div>
+<input type="file" id="fileIn" multiple accept=".pdf,.epub,.zip,.json,application/pdf,application/epub+zip,application/zip" hidden>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-mark" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4.5L6 21z"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+    <symbol id="i-map" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="9" r="2.5"/><circle cx="9" cy="18" r="2.5"/><path d="M8.3 7l7.4 1.4M16.6 11l-5.8 5.3M6.6 8.4l1.7 7.2"/></symbol>
+    <symbol id="i-note" viewBox="0 0 24 24"><path d="M5 4h14v11l-5 5H5z"/><path d="M14 20v-5h5M8 9h8M8 13h4"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></symbol>
+    <symbol id="i-open" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v6H4V6h6"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></symbol>
+    <symbol id="i-fit" viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 15V4M7 9l5-5 5 5M5 20h14"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/></symbol>
+    <symbol id="i-expand" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/></symbol>
+  </defs>
+</svg>
+
+<script src="vendor/pdf.min.js"></script>
+<script src="vendor/jszip.min.js"></script>
+<script src="vendor/epub.min.js"></script>
+<script>
+'use strict';
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'vendor/pdf.worker.min.js';
+
+/* ---------- utilità ---------- */
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const trunc = (s, n) => (s = String(s || ''), s.length > n ? s.slice(0, n).trimEnd() + '…' : s);
+const ic = n => `<svg class="i"><use href="#i-${n}"/></svg>`;
+const HEX = { yellow: '#FFD43B', green: '#4CD98A', blue: '#5AB4FA', pink: '#FF7AB8' };
+const COLOR_KEYS = Object.keys(HEX);
+const fmtMB = b => (b / 1048576).toFixed(b > 104857600 ? 0 : 1) + ' MB';
+const debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
+
+/* ---------- database locale (IndexedDB) ---------- */
+const STORES = ['books', 'files', 'hls', 'nodes', 'links', 'maps'];
+let db;
+function openDB() {
+  return new Promise((res, rej) => {
+    const r = indexedDB.open('margini', 1);
+    r.onupgradeneeded = () => { const d = r.result; for (const s of STORES) if (!d.objectStoreNames.contains(s)) d.createObjectStore(s, { keyPath: 'id' }); };
+    r.onsuccess = () => { db = r.result; res(); };
+    r.onerror = () => rej(r.error);
+  });
+}
+const wrap = r => new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+const os = (s, m = 'readonly') => db.transaction(s, m).objectStore(s);
+const dbPut = (s, v) => wrap(os(s, 'readwrite').put(v));
+const dbGet = (s, id) => wrap(os(s).get(id));
+const dbDel = (s, id) => wrap(os(s, 'readwrite').delete(id));
+const dbAll = s => wrap(os(s).getAll());
+
+const S = { books: [], hls: [], nodes: [], links: [], maps: [] };
+async function loadAll() { for (const k of Object.keys(S)) S[k] = await dbAll(k); }
+async function save(store, obj) {
+  await dbPut(store, obj);
+  const a = S[store], i = a.findIndex(x => x.id === obj.id);
+  if (i < 0) a.push(obj); else a[i] = obj;
+}
+async function remove(store, id) { await dbDel(store, id); S[store] = S[store].filter(x => x.id !== id); }
+
+/* ---------- elementi (sottolineature, pagine segnate, note libere) ---------- */
+const itemById = id => S.hls.find(x => x.id === id) || S.nodes.find(x => x.id === id);
+const kindOf = it => it.kind || 'hl';
+const bookOf = it => it && S.books.find(b => b.id === it.bookId);
+const linksOf = id => S.links.filter(l => l.a === id || l.b === id);
+const otherEnd = (l, id) => l.a === id ? l.b : l.a;
+function locLabel(it) {
+  if (!it.loc) return '';
+  if (it.loc.page) return 'p. ' + it.loc.page;
+  return it.loc.label || '';
+}
+function itemTitle(it) {
+  const k = kindOf(it);
+  if (k === 'hl') return it.text;
+  if (k === 'page') return it.text || ('Pagina ' + locLabel(it));
+  return it.text;
+}
+function itemSrc(it) {
+  const b = bookOf(it);
+  if (!b) return kindOf(it) === 'text' ? 'Nota libera' : '';
+  return [b.title, locLabel(it)].filter(Boolean).join(' · ');
+}
+async function deleteItem(id) {
+  const it = itemById(id); if (!it) return;
+  await remove(kindOf(it) === 'hl' ? 'hls' : 'nodes', id);
+  for (const l of linksOf(id)) await remove('links', l.id);
+  for (const m of S.maps) if (m.pos[id]) { delete m.pos[id]; await save('maps', m); }
+}
+async function linkItems(a, b, label = '') {
+  if (a === b) return;
+  if (S.links.some(l => (l.a === a && l.b === b) || (l.a === b && l.b === a))) { toast('Sono già collegati'); return; }
+  await save('links', { id: uid(), a, b, label, created: Date.now() });
+}
+
+/* ---------- toast e fogli ---------- */
+let toastT;
+function toast(msg, action, fn, ms = 3200) {
+  const t = $('#toast');
+  t.innerHTML = `<span>${esc(msg)}</span>` + (action ? `<button>${esc(action)}</button>` : '');
+  if (action) t.querySelector('button').onclick = () => { t.hidden = true; fn(); };
+  t.hidden = false; clearTimeout(toastT);
+  if (ms) toastT = setTimeout(() => t.hidden = true, ms);
+}
+let sheetClose = null;
+function openSheet(title, html, onClose) {
+  const back = $('#sheetBack');
+  back.innerHTML = `<div class="sheet" role="dialog"><header><b>${esc(title)}</b><button class="ib" data-x aria-label="Chiudi">${ic('x')}</button></header><div class="sbody">${html}</div></div>`;
+  back.hidden = false;
+  const el = back.firstElementChild;
+  const close = () => { if (back.hidden) return; back.hidden = true; back.innerHTML = ''; sheetClose = null; onClose && onClose(); };
+  sheetClose = close;
+  el.querySelector('[data-x]').onclick = close;
+  back.onpointerdown = e => { if (e.target === back) close(); };
+  return el;
+}
+const closeSheet = () => sheetClose && sheetClose();
+function askText(title, value = '', { multiline = false, ok = 'Salva', placeholder = '' } = {}) {
+  return new Promise(res => {
+    let done = false;
+    const field = multiline
+      ? `<textarea class="note" id="askF" placeholder="${esc(placeholder)}">${esc(value)}</textarea>`
+      : `<input class="txt" id="askF" value="${esc(value)}" placeholder="${esc(placeholder)}">`;
+    const el = openSheet(title, `${field}<div class="actions"><button class="btn primary" id="askOk">${esc(ok)}</button></div>`, () => { if (!done) res(null); });
+    const f = $('#askF', el);
+    const fin = () => { done = true; const v = f.value.trim(); closeSheet(); res(v); };
+    $('#askOk', el).onclick = fin;
+    if (!multiline) f.onkeydown = e => { if (e.key === 'Enter') fin(); };
+    setTimeout(() => { f.focus(); f.select && !multiline && f.select(); }, 60);
+  });
+}
+function askConfirm(title, text, ok = 'Elimina') {
+  return new Promise(res => {
+    let done = false;
+    const el = openSheet(title, `<p style="margin:4px 0 0">${esc(text)}</p><div class="actions"><button class="btn danger" id="cOk">${esc(ok)}</button><button class="btn" id="cNo">Annulla</button></div>`, () => { if (!done) res(false); });
+    $('#cOk', el).onclick = () => { done = true; closeSheet(); res(true); };
+    $('#cNo', el).onclick = () => closeSheet();
+  });
+}
+
+/* ---------- navigazione ---------- */
+let view = 'lib';
+const back = [];
+function here() {
+  if (view === 'read' && R.book) return { v: 'read', id: R.book.id };
+  if (view === 'map' && M.map) return { v: 'map', id: M.map.id };
+  return { v: 'lib' };
+}
+function go(v, push = true) {
+  if (push && view !== v) { back.push(here()); if (back.length > 40) back.shift(); }
+  if (view === 'read' && v !== 'read') closeReader();
+  view = v;
+  for (const n of ['lib', 'read', 'map']) $('#v-' + n).hidden = n !== v;
+  hideSelBar();
+  if (v === 'lib') renderLib();
+}
+function goBack() {
+  const p = back.pop() || { v: 'lib' };
+  if (p.v === 'read' && S.books.some(b => b.id === p.id)) openBook(p.id, null, false);
+  else if (p.v === 'map' && S.maps.some(m => m.id === p.id)) openMap(p.id, null, false);
+  else go('lib', false);
+}
+
+/* ---------- import ---------- */
+const cleanTitle = n => n.replace(/\.[^.]+$/, '').replace(/[_]+/g, ' ').replace(/\s+/g, ' ').trim();
+async function importFiles(list) {
+  const files = [...list]; if (!files.length) return;
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+  const res = { added: 0, skipped: [], dup: 0, restored: false };
+  let i = 0;
+  for (const f of files) {
+    i++; toast(`Importo ${i} di ${files.length}…`, null, null, 0);
+    try { await importOne(f.name, f, res); }
+    catch (e) { console.error(e); res.skipped.push(f.name + ' (errore)'); }
+  }
+  renderLib();
+  const parts = [];
+  if (res.restored) parts.push('Backup ripristinato');
+  if (res.added) parts.push(`${res.added} ${res.added === 1 ? 'libro aggiunto' : 'libri aggiunti'}`);
+  if (res.dup) parts.push(`${res.dup} già presenti`);
+  if (res.skipped.length) {
+    toast(parts.concat(`${res.skipped.length} non supportati`).join(' · '), 'Dettagli', () => {
+      openSheet('File non importati', `<p class="muted">Margini apre PDF ed EPUB. Questi file hanno un altro formato:</p><div class="list">${res.skipped.map(s => `<div class="row"><div class="body">${esc(s)}</div></div>`).join('')}</div>`);
+    }, 9000);
+  } else toast(parts.join(' · ') || 'Nessun file importato');
+}
+async function importOne(name, blob, res, depth = 0) {
+  const ext = (name.split('.').pop() || '').toLowerCase();
+  const base = name.split('/').pop();
+  if (ext === 'pdf' || ext === 'epub') return addBook(base, blob, ext, res);
+  if (ext === 'json') {
+    const data = JSON.parse(await blob.text());
+    if (data && data.app === 'margini') { await restoreBackup(data, null); res.restored = true; return; }
+    res.skipped.push(base); return;
+  }
+  if (ext === 'zip' && depth < 3) {
+    const z = await JSZip.loadAsync(blob);
+    const bk = z.file('margini-backup.json');
+    if (bk) { await restoreBackup(JSON.parse(await bk.async('string')), z); res.restored = true; return; }
+    const entries = Object.values(z.files).filter(e => !e.dir && !/(^|\/)(__MACOSX|\.)/.test(e.name));
+    for (const e of entries) {
+      const x = (e.name.split('.').pop() || '').toLowerCase();
+      if (['pdf', 'epub', 'zip'].includes(x)) await importOne(e.name, await e.async('blob'), res, depth + 1);
+      else res.skipped.push(e.name.split('/').pop() + '  (dentro ' + base + ')');
+    }
+    return;
+  }
+  res.skipped.push(base);
+}
+async function addBook(name, blob, type, res) {
+  const title = cleanTitle(name);
+  if (S.books.some(b => b.title === title && b.size === blob.size)) { res.dup++; return; }
+  const id = uid();
+  const data = new Blob([await blob.arrayBuffer()], { type: type === 'pdf' ? 'application/pdf' : 'application/epub+zip' });
+  await dbPut('files', { id, blob: data });
+  const book = { id, title, type, size: data.size, added: Date.now(), opened: 0, pos: null, zoom: 1, font: 100, cover: null };
+  try { book.cover = await makeCover(data, type); } catch (e) { console.warn('copertina', e); }
+  await save('books', book);
+  res.added++;
+}
+async function makeCover(blob, type) {
+  const cv = document.createElement('canvas');
+  if (type === 'pdf') {
+    const doc = await pdfjsLib.getDocument({ data: new Uint8Array(await blob.arrayBuffer()) }).promise;
+    const p = await doc.getPage(1); const v0 = p.getViewport({ scale: 1 });
+    const vp = p.getViewport({ scale: 300 / v0.width });
+    cv.width = vp.width; cv.height = vp.height;
+    await p.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise;
+    doc.destroy();
+    return cv.toDataURL('image/jpeg', .72);
+  }
+  const b = ePub(await blob.arrayBuffer());
+  await b.ready;
+  const url = await b.coverUrl();
+  let out = null;
+  if (url) {
+    const img = await new Promise((ok, ko) => { const i = new Image(); i.onload = () => ok(i); i.onerror = ko; i.src = url; });
+    const w = 300, h = Math.round(img.naturalHeight * w / img.naturalWidth) || 420;
+    cv.width = w; cv.height = h; cv.getContext('2d').drawImage(img, 0, 0, w, h);
+    out = cv.toDataURL('image/jpeg', .72);
+  }
+  b.destroy();
+  return out;
+}
+
+/* ---------- backup ---------- */
+async function restoreBackup(data, zip) {
+  for (const k of ['books', 'hls', 'nodes', 'links', 'maps']) for (const r of (data[k] || [])) await dbPut(k, r);
+  if (zip) for (const b of (data.books || [])) {
+    const f = zip.file(`files/${b.id}.${b.type}`);
+    if (f) await dbPut('files', { id: b.id, blob: new Blob([await f.async('arraybuffer')], { type: b.type === 'pdf' ? 'application/pdf' : 'application/epub+zip' }) });
+  }
+  await loadAll();
+}
+async function exportBackup(withBooks) {
+  closeSheet();
+  const stamp = new Date().toISOString().slice(0, 10);
+  const data = { app: 'margini', v: 1, date: new Date().toISOString(), ...S };
+  let blob, name;
+  if (withBooks) {
+    toast('Preparo il backup…', null, null, 0);
+    const z = new JSZip();
+    z.file('margini-backup.json', JSON.stringify(data));
+    for (const b of S.books) { const f = await dbGet('files', b.id); if (f) z.file(`files/${b.id}.${b.type}`, f.blob); }
+    blob = await z.generateAsync({ type: 'blob', compression: 'STORE' });
+    name = `margini-backup-${stamp}.zip`;
+  } else {
+    blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+    name = `margini-appunti-${stamp}.json`;
+  }
+  await shareOrDownload(blob, name);
+}
+async function shareOrDownload(blob, name) {
+  const file = new File([blob], name, { type: blob.type || 'application/octet-stream' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file] }); toast('Backup pronto'); return; }
+    catch (e) { if (e.name === 'AbortError') { $('#toast').hidden = true; return; } }
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 5000);
+  toast('Backup scaricato: ' + name);
+}
+async function openMenu() {
+  let used = '', persisted = false;
+  try { const e = await navigator.storage.estimate(); used = fmtMB(e.usage || 0); persisted = await navigator.storage.persisted(); } catch {}
+  const total = S.books.reduce((s, b) => s + (b.size || 0), 0);
+  const el = openSheet('Backup e dati', `
+    <div class="menu">
+      <button class="mi" data-a="all">${ic('down')}<span>Esporta tutto<small>Libri e appunti in un file ZIP (${fmtMB(total)})</small></span></button>
+      <button class="mi" data-a="notes">${ic('down')}<span>Esporta solo gli appunti<small>File leggero, senza i libri</small></span></button>
+      <button class="mi" data-a="imp">${ic('up')}<span>Ripristina un backup<small>Scegli il file ZIP o JSON esportato da Margini</small></span></button>
+    </div>
+    <div class="lbl">Privacy</div>
+    <p class="muted" style="margin:0">${ic('shield')} Tutto resta su questo dispositivo: nessun account, nessun server. Spazio usato: ${used || 'n.d.'}. Memoria ${persisted ? 'protetta dalla pulizia automatica' : 'non ancora protetta: si attiva dopo il primo import'}.</p>
+    <p class="muted">Se elimini l'app dalla schermata Home perdi i dati: fai un backup ogni tanto.</p>`);
+  el.querySelector('[data-a=all]').onclick = () => exportBackup(true);
+  el.querySelector('[data-a=notes]').onclick = () => exportBackup(false);
+  el.querySelector('[data-a=imp]').onclick = () => { closeSheet(); $('#fileIn').click(); };
+}
+
+/* ---------- libreria ---------- */
+let tab = 'books', noteQuery = '';
+function renderLib() {
+  $$('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  const body = $('#libBody');
+  if (tab === 'books') return renderBooks(body);
+  if (tab === 'notes') return renderNotes(body);
+  return renderMaps(body);
+}
+function renderBooks(body) {
+  if (!S.books.length) {
+    body.innerHTML = `<div class="empty"><img src="icon-180.png" width="84" height="84" style="border-radius:20px" alt=""><h2>La tua libreria è vuota</h2><p>Importa PDF, EPUB o file ZIP che li contengono. Restano solo su questo dispositivo.</p><button class="btn primary" id="emptyImp">${ic('plus')} Importa libri</button></div>`;
+    $('#emptyImp').onclick = () => $('#fileIn').click();
+    return;
+  }
+  const books = [...S.books].sort((a, b) => (b.opened || b.added) - (a.opened || a.added));
+  body.innerHTML = `<div class="grid">${books.map(b => {
+    const n = S.hls.filter(h => h.bookId === b.id).length;
+    const prog = b.pos && b.pos.page && b.pages ? Math.round(b.pos.page / b.pages * 100) + '%' : '';
+    return `<div class="card"><button class="cover" data-open="${b.id}" aria-label="${esc(b.title)}">${b.cover ? `<img src="${b.cover}" alt="">` : `<span class="ph">${esc(trunc(b.title, 80))}</span>`}<span class="tag">${b.type.toUpperCase()}</span></button>
+      <button class="more" data-more="${b.id}" aria-label="Opzioni">${ic('more')}</button>
+      <div class="t">${esc(b.title)}</div><div class="m">${[n ? n + ' sottolineature' : 'Nessun appunto', prog].filter(Boolean).join(' · ')}</div></div>`;
+  }).join('')}</div>`;
+  $$('[data-open]', body).forEach(el => el.onclick = () => openBook(el.dataset.open));
+  $$('[data-more]', body).forEach(el => el.onclick = () => bookMenu(el.dataset.more));
+}
+function bookMenu(id) {
+  const b = S.books.find(x => x.id === id);
+  const el = openSheet(b.title, `<div class="menu">
+    <button class="mi" data-a="ren">${ic('edit')}<span>Rinomina</span></button>
+    <button class="mi" data-a="del" style="color:var(--danger)">${ic('trash')}<span>Elimina libro<small>Elimina anche sottolineature e pagine segnate di questo libro</small></span></button></div>`);
+  el.querySelector('[data-a=ren]').onclick = async () => {
+    closeSheet(); const t = await askText('Rinomina libro', b.title);
+    if (t) { b.title = t; await save('books', b); renderLib(); }
+  };
+  el.querySelector('[data-a=del]').onclick = async () => {
+    closeSheet();
+    if (!await askConfirm('Eliminare il libro?', `«${b.title}» e tutti i suoi appunti verranno eliminati da questo dispositivo.`)) return;
+    for (const it of [...S.hls, ...S.nodes].filter(x => x.bookId === id)) await deleteItem(it.id);
+    await dbDel('files', id); await remove('books', id); renderLib(); toast('Libro eliminato');
+  };
+}
+function allItems() { return [...S.hls, ...S.nodes]; }
+function matchQ(it, q) {
+  if (!q) return true;
+  const b = bookOf(it);
+  return [it.text, it.note, b && b.title].join(' ').toLowerCase().includes(q);
+}
+function itemRow(it, extra = '') {
+  const k = kindOf(it), lc = linksOf(it.id).length;
+  const sw = k === 'hl' ? HEX[it.color] : k === 'page' ? 'var(--accent)' : HEX[it.color || 'blue'];
+  return `<button class="row" data-item="${it.id}"><span class="sw" style="background:${sw}"></span><span class="body">
+    <div class="q">${k === 'page' ? ic('mark') + ' ' : ''}${esc(trunc(itemTitle(it), 400))}</div>
+    ${it.note ? `<div class="n">${esc(trunc(it.note, 400))}</div>` : ''}
+    <div class="s"><span>${esc(itemSrc(it))}</span>${lc ? `<span class="badge">${ic('link')} ${lc}</span>` : ''}${extra}</div></span></button>`;
+}
+function renderNotes(body) {
+  const q = noteQuery.toLowerCase().trim();
+  const items = allItems().filter(it => matchQ(it, q));
+  const groups = new Map();
+  for (const it of items) { const k = it.bookId || '_free'; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(it); }
+  const sortKey = it => it.loc && it.loc.page ? it.loc.page * 10 + ((it.loc.rects && it.loc.rects[0] ? it.loc.rects[0].y : it.loc.y) || 0) : it.created;
+  let html = `<label class="search">${ic('search')}<input id="nq" type="search" placeholder="Cerca in tutti gli appunti e i libri" value="${esc(noteQuery)}"></label>`;
+  if (!allItems().length) html += `<div class="empty"><h2>Ancora nessun appunto</h2><p>Apri un libro, seleziona del testo e scegli un colore per sottolinearlo.</p></div>`;
+  else if (!items.length) html += `<p class="muted">Nessun risultato.</p>`;
+  for (const [k, arr] of groups) {
+    const b = S.books.find(x => x.id === k);
+    arr.sort((a, c) => sortKey(a) - sortKey(c));
+    html += `<div class="group"><h3>${esc(b ? b.title : 'Note libere')}</h3><div class="list">${arr.map(it => itemRow(it)).join('')}</div></div>`;
+  }
+  body.innerHTML = html;
+  const inp = $('#nq');
+  inp.oninput = () => { noteQuery = inp.value; const p = inp.selectionStart; renderNotes(body); const n = $('#nq'); n.focus(); n.setSelectionRange(p, p); };
+  $$('[data-item]', body).forEach(el => el.onclick = () => openItem(el.dataset.item));
+}
+function renderMaps(body) {
+  const maps = [...S.maps].sort((a, b) => (b.updated || 0) - (a.updated || 0));
+  body.innerHTML = `<div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn primary" id="newMap">${ic('plus')} Nuova mappa</button></div>` +
+    (maps.length ? `<div class="list">${maps.map(m => {
+      const ids = Object.keys(m.pos); const books = new Set(ids.map(i => itemById(i)).filter(Boolean).map(i => i.bookId).filter(Boolean));
+      return `<div class="row" style="align-items:center"><button style="display:flex;gap:12px;align-items:center;flex:1;text-align:left;min-width:0" data-map="${m.id}">${ic('map')}<span class="body"><div style="font-weight:600">${esc(m.name)}</div><div class="s">${ids.length} elementi · ${books.size} ${books.size === 1 ? 'libro' : 'libri'}</div></span></button><button class="ib" data-mm="${m.id}" aria-label="Opzioni">${ic('more')}</button></div>`;
+    }).join('')}</div>`
+      : `<div class="empty"><h2>Nessuna mappa</h2><p>Una mappa mette insieme sottolineature, pagine e note di libri diversi e le collega tra loro. Tocca un collegamento per saltare alla pagina.</p></div>`);
+  $('#newMap').onclick = async () => { const m = await newMap(); if (m) openMap(m.id); };
+  $$('[data-map]', body).forEach(el => el.onclick = () => openMap(el.dataset.map));
+  $$('[data-mm]', body).forEach(el => el.onclick = () => {
+    const m = S.maps.find(x => x.id === el.dataset.mm);
+    const s = openSheet(m.name, `<div class="menu"><button class="mi" data-a="ren">${ic('edit')}<span>Rinomina</span></button><button class="mi" data-a="del" style="color:var(--danger)">${ic('trash')}<span>Elimina mappa<small>Le sottolineature restano nei libri</small></span></button></div>`);
+    s.querySelector('[data-a=ren]').onclick = async () => { closeSheet(); const t = await askText('Rinomina mappa', m.name); if (t) { m.name = t; await save('maps', m); renderLib(); } };
+    s.querySelector('[data-a=del]').onclick = async () => {
+      closeSheet(); if (!await askConfirm('Eliminare la mappa?', `«${m.name}» verrà eliminata. Le note libere presenti solo qui verranno eliminate.`)) return;
+      for (const id of Object.keys(m.pos)) { const it = itemById(id); if (it && kindOf(it) === 'text' && !S.maps.some(o => o !== m && o.pos[id])) await deleteItem(id); }
+      await remove('maps', m.id); renderLib();
+    };
+  });
+}
+async function newMap() {
+  const name = await askText('Nuova mappa', '', { ok: 'Crea', placeholder: 'Es. Diritto privato, esame di giugno' });
+  if (!name) return null;
+  const m = { id: uid(), name, pos: {}, view: null, created: Date.now(), updated: Date.now() };
+  await save('maps', m); return m;
+}
+
+/* ---------- lettore ---------- */
+const R = { book: null, kind: null, pdf: null, base: null, scale: 1, pages: [], obs: null, gen: 0, rendition: null, epub: null, pending: null, cur: 1, loc: null, toc: [], flash: null };
+const saveBookPos = debounce(() => R.book && save('books', R.book), 700);
+
+async function openBook(bookId, item, push = true) {
+  const book = S.books.find(b => b.id === bookId); if (!book) return toast('Libro non trovato');
+  const file = await dbGet('files', bookId); if (!file) return toast('File del libro mancante');
+  if (view === 'read') { if (push) { back.push(here()); } closeReader(); }
+  go('read', push);
+  R.book = book; book.opened = Date.now(); save('books', book);
+  $('#readTitle').textContent = book.title;
+  $('#pageInfo').textContent = '';
+  $('#zOut').hidden = $('#zIn').hidden = false;
+  try {
+    if (book.type === 'pdf') await openPdf(file.blob, item);
+    else await openEpub(file.blob, item);
+  } catch (e) { console.error(e); toast('Impossibile aprire questo file'); }
+  if (!$('#side').hidden) renderSide();
+}
+function closeReader() {
+  R.gen++;
+  if (R.obs) R.obs.disconnect();
+  if (R.pdf) { try { R.pdf.destroy(); } catch {} }
+  if (R.rendition) { try { R.rendition.destroy(); } catch {} }
+  if (R.epub) { try { R.epub.destroy(); } catch {} }
+  $('#pdfPages').innerHTML = ''; $('#epubBox').innerHTML = '';
+  Object.assign(R, { book: null, kind: null, pdf: null, pages: [], obs: null, rendition: null, epub: null, pending: null, loc: null });
+  hideSelBar();
+}
+
+/* --- PDF --- */
+async function openPdf(blob, item) {
+  R.kind = 'pdf';
+  $('#epubBox').hidden = true; $('#pdfScroll').hidden = false;
+  R.pdf = await pdfjsLib.getDocument({ data: new Uint8Array(await blob.arrayBuffer()) }).promise;
+  if (R.book.pages !== R.pdf.numPages) { R.book.pages = R.pdf.numPages; save('books', R.book); }
+  const p1 = await R.pdf.getPage(1);
+  R.base = p1.getViewport({ scale: 1 });
+  layoutPdf();
+  if (item) jumpTo(item);
+  else { const p = R.book.pos || { page: 1, y: 0 }; scrollToPdf(p.page || 1, p.y || 0); }
+}
+function pdfScale() {
+  const w = $('#pdfScroll').clientWidth || innerWidth;
+  return Math.max(.25, Math.min(w - 28, 1500) / R.base.width) * (R.book.zoom || 1);
+}
+function layoutPdf() {
+  R.gen++;
+  const box = $('#pdfPages'); box.innerHTML = ''; box.style.transform = '';
+  R.scale = pdfScale(); R.pages = [];
+  if (R.obs) R.obs.disconnect();
+  R.obs = new IntersectionObserver(es => { for (const e of es) { const n = +e.target.dataset.n; e.isIntersecting ? renderPage(n) : unrenderPage(n); } }, { root: $('#pdfScroll'), rootMargin: '1400px 0px' });
+  const w = Math.floor(R.base.width * R.scale), h = Math.floor(R.base.height * R.scale);
+  const frag = document.createDocumentFragment();
+  for (let n = 1; n <= R.pdf.numPages; n++) {
+    const d = document.createElement('div');
+    d.className = 'page'; d.dataset.n = n; d.style.width = w + 'px'; d.style.height = h + 'px';
+    frag.appendChild(d); R.pages[n] = { el: d, on: false, task: null };
+  }
+  box.appendChild(frag);
+  for (let n = 1; n <= R.pdf.numPages; n++) R.obs.observe(R.pages[n].el);
+  $('#pageInfo').textContent = `${R.cur} / ${R.pdf.numPages}`;
+}
+async function renderPage(n) {
+  const P = R.pages[n]; if (!P || P.on) return;
+  P.on = true; const gen = R.gen;
+  const page = await R.pdf.getPage(n);
+  if (gen !== R.gen || !P.on) return;
+  const vp = page.getViewport({ scale: R.scale });
+  const el = P.el;
+  el.style.width = Math.floor(vp.width) + 'px'; el.style.height = Math.floor(vp.height) + 'px';
+  el.style.setProperty('--scale-factor', vp.scale);
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  const cv = document.createElement('canvas');
+  cv.width = Math.floor(vp.width * dpr); cv.height = Math.floor(vp.height * dpr);
+  cv.style.width = Math.floor(vp.width) + 'px'; cv.style.height = Math.floor(vp.height) + 'px';
+  const hl = document.createElement('div'); hl.className = 'hlLayer';
+  const tl = document.createElement('div'); tl.className = 'textLayer';
+  el.replaceChildren(cv, hl, tl);
+  drawPageHls(n);
+  P.task = page.render({ canvasContext: cv.getContext('2d'), viewport: vp, transform: dpr !== 1 ? [dpr, 0, 0, dpr, 0, 0] : null });
+  try { await P.task.promise; } catch { return; }
+  if (gen !== R.gen || !P.on) return;
+  const tc = await page.getTextContent();
+  if (gen !== R.gen || !P.on) return;
+  pdfjsLib.renderTextLayer({ textContentSource: tc, container: tl, viewport: vp, textDivs: [] });
+  const end = document.createElement('div'); end.className = 'endOfContent'; tl.appendChild(end);
+}
+function unrenderPage(n) {
+  const P = R.pages[n]; if (!P || !P.on) return;
+  P.on = false;
+  if (P.task) { try { P.task.cancel(); } catch {} }
+  const cv = P.el.querySelector('canvas'); if (cv) { cv.width = cv.height = 0; }
+  P.el.replaceChildren();
+}
+function drawPageHls(n) {
+  const P = R.pages[n]; const layer = P && P.el.querySelector('.hlLayer'); if (!layer) return;
+  let h = '';
+  for (const it of S.hls) {
+    if (it.bookId !== R.book.id || !it.loc.rects) continue;
+    for (const r of it.loc.rects) if (r.p === n)
+      h += `<div class="hl${R.flash === it.id ? ' flash' : ''}" data-id="${it.id}" style="left:${r.x * 100}%;top:${r.y * 100}%;width:${r.w * 100}%;height:${r.h * 100}%;background:${HEX[it.color]}"></div>`;
+  }
+  for (const nd of S.nodes) if (nd.bookId === R.book.id && nd.kind === 'page' && nd.loc.page === n)
+    h += `<div class="mark" style="top:${Math.max(0, (nd.loc.y || 0) * 100)}%"></div>`;
+  layer.innerHTML = h;
+}
+function scrollToPdf(n, y = 0) {
+  n = Math.min(Math.max(1, n | 0), R.pdf.numPages);
+  const P = R.pages[n]; const sc = $('#pdfScroll');
+  sc.scrollTop = P.el.offsetTop + y * P.el.offsetHeight - 12;
+  updPdfPos();
+}
+function updPdfPos() {
+  if (R.kind !== 'pdf' || !R.pages.length) return;
+  const sc = $('#pdfScroll'), mid = sc.scrollTop + sc.clientHeight * .3;
+  let lo = 1, hi = R.pdf.numPages;
+  while (lo < hi) { const m = (lo + hi + 1) >> 1; if (R.pages[m].el.offsetTop <= mid) lo = m; else hi = m - 1; }
+  const el = R.pages[lo].el;
+  R.cur = lo;
+  $('#pageInfo').textContent = `${lo} / ${R.pdf.numPages}`;
+  R.book.pos = { page: lo, y: Math.max(0, (sc.scrollTop - el.offsetTop) / el.offsetHeight) };
+  saveBookPos();
+}
+$('#pdfScroll').addEventListener('scroll', () => { cancelAnimationFrame(R.raf); R.raf = requestAnimationFrame(updPdfPos); }, { passive: true });
+function setZoom(z) {
+  if (R.kind !== 'pdf') return;
+  const pos = { ...(R.book.pos || { page: 1, y: 0 }) };
+  R.book.zoom = Math.min(4, Math.max(.4, z)); save('books', R.book);
+  layoutPdf(); scrollToPdf(pos.page, pos.y);
+}
+// pinch sul PDF: anteprima con transform, poi nuovo rendering nitido
+(() => {
+  const sc = $('#pdfScroll'); let pin = null;
+  const dist = t => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+  sc.addEventListener('touchstart', e => {
+    if (e.touches.length === 2 && R.kind === 'pdf') {
+      const b = sc.getBoundingClientRect();
+      const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2 - b.left + sc.scrollLeft;
+      const cy = (e.touches[0].clientY + e.touches[1].clientY) / 2 - b.top + sc.scrollTop;
+      pin = { d: dist(e.touches), r: 1 };
+      $('#pdfPages').style.transformOrigin = `${cx}px ${cy}px`;
+    }
+  }, { passive: true });
+  sc.addEventListener('touchmove', e => {
+    if (!pin || e.touches.length !== 2) return;
+    e.preventDefault();
+    pin.r = Math.min(3, Math.max(.4, dist(e.touches) / pin.d));
+    $('#pdfPages').style.transform = `scale(${pin.r})`;
+  }, { passive: false });
+  sc.addEventListener('touchend', e => {
+    if (!pin || e.touches.length) return;
+    const r = pin.r; pin = null;
+    if (Math.abs(r - 1) < .04) { $('#pdfPages').style.transform = ''; return; }
+    setZoom((R.book.zoom || 1) * r);
+  });
+})();
+
+// selezione testo nel PDF
+let selT;
+document.addEventListener('selectionchange', () => {
+  if (R.kind !== 'pdf') return;
+  clearTimeout(selT); selT = setTimeout(checkPdfSel, 260);
+});
+function checkPdfSel() {
+  const s = getSelection();
+  if (!s || s.isCollapsed || !s.rangeCount) { if (R.pending && R.pending.kind === 'pdf') hideSelBar(); return; }
+  const rg = s.getRangeAt(0);
+  const anc = rg.commonAncestorContainer, el = anc.nodeType === 1 ? anc : anc.parentElement;
+  if (!el || !el.closest('#pdfPages')) return;
+  const text = s.toString().replace(/\s+/g, ' ').trim();
+  if (!text) return hideSelBar();
+  const pages = R.pages.filter(p => p && p.on).map(p => ({ n: +p.el.dataset.n, b: p.el.getBoundingClientRect() }));
+  let rects = [];
+  for (const cr of rg.getClientRects()) {
+    if (cr.width < 1.5 || cr.height < 1.5) continue;
+    const cx = cr.left + cr.width / 2, cy = cr.top + cr.height / 2;
+    const pg = pages.find(p => cx >= p.b.left && cx <= p.b.right && cy >= p.b.top && cy <= p.b.bottom);
+    if (!pg) continue;
+    rects.push({ p: pg.n, x: (cr.left - pg.b.left) / pg.b.width, y: (cr.top - pg.b.top) / pg.b.height, w: cr.width / pg.b.width, h: cr.height / pg.b.height });
+  }
+  rects = mergeRects(rects);
+  if (!rects.length) return hideSelBar();
+  R.pending = { kind: 'pdf', text, rects, page: rects[0].p };
+  showSelBar(rg.getBoundingClientRect());
+}
+function mergeRects(rs) {
+  rs = rs.filter((a, i) => !rs.some((b, j) => j !== i && b.p === a.p && b.x <= a.x + .001 && b.y <= a.y + .001 && b.x + b.w >= a.x + a.w - .001 && b.y + b.h >= a.y + a.h - .001 && (b.w * b.h > a.w * a.h || j < i)));
+  rs.sort((a, b) => a.p - b.p || a.y - b.y || a.x - b.x);
+  const out = [];
+  for (const r of rs) {
+    const l = out[out.length - 1];
+    if (l && l.p === r.p && Math.abs(l.y - r.y) < Math.min(l.h, r.h) * .5 && r.x <= l.x + l.w + .012) {
+      const x2 = Math.max(l.x + l.w, r.x + r.w), y1 = Math.min(l.y, r.y), y2 = Math.max(l.y + l.h, r.y + r.h);
+      l.x = Math.min(l.x, r.x); l.w = x2 - l.x; l.y = y1; l.h = y2 - y1;
+    } else out.push({ ...r });
+  }
+  return out.map(r => ({ p: r.p, x: +r.x.toFixed(5), y: +r.y.toFixed(5), w: +r.w.toFixed(5), h: +r.h.toFixed(5) }));
+}
+$('#pdfScroll').addEventListener('click', e => {
+  const s = getSelection(); if (s && !s.isCollapsed) return;
+  const pg = e.target.closest('.page'); if (!pg) return;
+  const b = pg.getBoundingClientRect(), n = +pg.dataset.n;
+  const x = (e.clientX - b.left) / b.width, y = (e.clientY - b.top) / b.height;
+  const hit = S.hls.find(h => h.bookId === R.book.id && h.loc.rects && h.loc.rects.some(r => r.p === n && x >= r.x && x <= r.x + r.w && y >= r.y - .004 && y <= r.y + r.h + .004));
+  if (hit) openItemSheet(hit.id);
+});
+
+/* --- EPUB --- */
+async function openEpub(blob, item) {
+  R.kind = 'epub';
+  $('#pdfScroll').hidden = true; const box = $('#epubBox'); box.hidden = false; box.innerHTML = '';
+  R.epub = ePub(await blob.arrayBuffer());
+  R.rendition = R.epub.renderTo(box, { width: '100%', height: '100%', flow: 'scrolled', manager: 'continuous', allowScriptedContent: false });
+  applyEpubTheme();
+  R.rendition.hooks.content.register(c => {
+    c.document.addEventListener('selectionchange', () => { const s = c.window.getSelection(); if ((!s || s.isCollapsed) && R.pending && R.pending.kind === 'epub') hideSelBar(); });
+  });
+  R.rendition.on('selected', (cfi, contents) => {
+    const s = contents.window.getSelection();
+    const text = (s ? s.toString() : '').replace(/\s+/g, ' ').trim(); if (!text) return;
+    R.pending = { kind: 'epub', cfi, text, contents };
+    let r = null;
+    try { const rr = s.getRangeAt(0).getBoundingClientRect(), fr = contents.window.frameElement.getBoundingClientRect(); r = { left: rr.left + fr.left, right: rr.right + fr.left, top: rr.top + fr.top, bottom: rr.bottom + fr.top, width: rr.width }; } catch {}
+    showSelBar(r);
+  });
+  R.rendition.on('relocated', loc => {
+    R.loc = loc; R.book.pos = { cfi: loc.start.cfi };
+    $('#pageInfo').textContent = trunc(chapterLabel(loc.start.href) || 'Lettura', 28);
+    saveBookPos();
+  });
+  await R.epub.ready;
+  R.toc = flatToc(R.epub.navigation ? R.epub.navigation.toc : []);
+  const cfi = item && item.loc ? item.loc.cfi : (R.book.pos && R.book.pos.cfi) || undefined;
+  await R.rendition.display(cfi);
+  for (const h of S.hls) if (h.bookId === R.book.id) addEpubMark(h);
+  if (item) { R.flash = item.id; }
+}
+function flatToc(t, out = []) { for (const i of t || []) { out.push(i); if (i.subitems) flatToc(i.subitems, out); } return out; }
+function chapterLabel(href) {
+  if (!href) return '';
+  const h = href.split('#')[0];
+  const it = R.toc.find(t => { const th = (t.href || '').split('#')[0]; return th && (th === h || h.endsWith(th) || th.endsWith(h)); });
+  return it ? it.label.trim() : '';
+}
+function applyEpubTheme() {
+  if (!R.rendition) return;
+  const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+  R.rendition.themes.default({
+    body: { 'color': dark ? '#E7EAEE !important' : '#14171C', 'background': 'transparent !important', 'line-height': '1.6', 'max-width': '760px', 'margin': '0 auto !important', 'padding': '28px 28px !important' },
+    'a': { 'color': dark ? '#8EA2FF !important' : '#2340D8' },
+    'img': { 'max-width': '100% !important', 'height': 'auto !important' },
+    '::selection': { 'background': 'rgba(35,64,216,.28)' }
+  });
+  R.rendition.themes.fontSize((R.book.font || 100) + '%');
+}
+function addEpubMark(h) {
+  if (!R.rendition || !h.loc.cfi) return;
+  try {
+    R.rendition.annotations.add('highlight', h.loc.cfi, { id: h.id }, () => openItemSheet(h.id), 'mg-hl', { 'fill': HEX[h.color], 'fill-opacity': '0.4', 'mix-blend-mode': 'multiply' });
+  } catch (e) { console.warn(e); }
+}
+function removeEpubMark(h) { try { R.rendition && R.rendition.annotations.remove(h.loc.cfi, 'highlight'); } catch {} }
+
+/* --- barra di selezione --- */
+function showSelBar(r) {
+  const bar = $('#selBar');
+  bar.innerHTML = COLOR_KEYS.map(c => `<button class="dot" data-c="${c}" style="background:${HEX[c]}" aria-label="Sottolinea"></button>`).join('') +
+    `<span class="sep"></span><button class="tb" data-note>${ic('note')} Nota</button>`;
+  bar.hidden = false;
+  const bw = bar.offsetWidth, bh = bar.offsetHeight;
+  let x = innerWidth / 2 - bw / 2, y = innerHeight - bh - 90;
+  if (r) {
+    x = Math.min(Math.max(10, r.left + r.width / 2 - bw / 2), innerWidth - bw - 10);
+    y = r.bottom + 14;
+    if (y + bh > innerHeight - 20) y = Math.max(70, r.top - bh - 60);
+  }
+  bar.style.left = x + 'px'; bar.style.top = y + 'px';
+}
+function hideSelBar() { $('#selBar').hidden = true; R.pending = null; }
+$('#selBar').addEventListener('pointerdown', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  e.preventDefault();
+  makeHl(b.dataset.c || 'yellow', b.hasAttribute('data-note'));
+});
+async function makeHl(color, withNote) {
+  const P = R.pending; if (!P || !R.book) return;
+  const hl = { id: uid(), bookId: R.book.id, color, text: P.text.slice(0, 5000), note: '', created: Date.now(),
+    loc: P.kind === 'pdf' ? { page: P.page, rects: P.rects } : { cfi: P.cfi, label: R.loc ? chapterLabel(R.loc.start.href) : '' } };
+  await save('hls', hl);
+  try { (P.kind === 'pdf' ? window : P.contents.window).getSelection().removeAllRanges(); } catch {}
+  hideSelBar();
+  if (P.kind === 'pdf') new Set(P.rects.map(r => r.p)).forEach(drawPageHls); else addEpubMark(hl);
+  if (!$('#side').hidden) renderSide();
+  if (withNote) openItemSheet(hl.id, true);
+}
+
+/* --- pagine segnate --- */
+async function markPage() {
+  if (!R.book) return;
+  let loc;
+  if (R.kind === 'pdf') loc = { page: R.cur, y: +(R.book.pos ? R.book.pos.y : 0).toFixed(4) };
+  else if (R.loc) loc = { cfi: R.loc.start.cfi, label: chapterLabel(R.loc.start.href) };
+  else return;
+  const t = await askText('Segna questa pagina', '', { ok: 'Segna', placeholder: 'Titolo facoltativo, es. Definizione di contratto' });
+  if (t === null) return;
+  const nd = { id: uid(), kind: 'page', bookId: R.book.id, text: t, note: '', loc, created: Date.now() };
+  await save('nodes', nd);
+  if (R.kind === 'pdf') drawPageHls(loc.page);
+  if (!$('#side').hidden) renderSide();
+  toast('Pagina segnata', 'Collega', () => openItemSheet(nd.id));
+}
+
+/* --- pannello appunti del libro --- */
+function renderSide() {
+  if (!R.book) return;
+  const items = allItems().filter(i => i.bookId === R.book.id);
+  if (R.kind === 'pdf') items.sort((a, b) => (a.loc.page - b.loc.page) || (((a.loc.rects && a.loc.rects[0].y) || a.loc.y || 0) - ((b.loc.rects && b.loc.rects[0].y) || b.loc.y || 0)));
+  else items.sort((a, b) => { try { return new ePub.CFI().compare(a.loc.cfi, b.loc.cfi); } catch { return a.created - b.created; } });
+  const L = $('#sideList');
+  L.innerHTML = items.length ? items.map(i => itemRow(i)).join('') : `<p class="muted" style="padding:8px 4px">Seleziona del testo e scegli un colore per sottolinearlo. Con ${ic('mark')} segni una pagina intera.</p>`;
+  $$('[data-item]', L).forEach(el => el.onclick = () => { const it = itemById(el.dataset.item); jumpTo(it); openItemSheet(it.id); if (innerWidth <= 820) $('#side').hidden = true; });
+}
+function jumpTo(it) {
+  if (!it || !R.book || it.bookId !== R.book.id) return;
+  R.flash = it.id;
+  if (R.kind === 'pdf') {
+    const y = it.loc.rects ? Math.max(0, Math.min(...it.loc.rects.filter(r => r.p === it.loc.page).map(r => r.y)) - .08) : (it.loc.y || 0);
+    scrollToPdf(it.loc.page, y);
+    setTimeout(() => drawPageHls(it.loc.page), 50);
+  } else if (R.rendition) R.rendition.display(it.loc.cfi);
+  clearTimeout(R.flashT);
+  R.flashT = setTimeout(() => { const f = R.flash; R.flash = null; if (R.kind === 'pdf' && f) { const x = itemById(f); x && x.loc && drawPageHls(x.loc.page); } }, 2600);
+}
+
+/* ---------- foglio di un elemento: nota, colore, portali ---------- */
+function openItemSheet(id, focusNote) {
+  const it = itemById(id); if (!it) return;
+  const k = kindOf(it);
+  const links = linksOf(id);
+  const title = k === 'hl' ? 'Sottolineatura' : k === 'page' ? 'Pagina segnata' : 'Nota libera';
+  const portals = links.map(l => {
+    const o = itemById(otherEnd(l, id)); if (!o) return '';
+    return `<div class="prow"><span class="sw" style="width:5px;align-self:stretch;border-radius:3px;background:${kindOf(o) === 'hl' ? HEX[o.color] : 'var(--accent)'}"></span><div class="body">${l.label ? `<div class="lb">${esc(l.label)}</div>` : ''}<div class="q">${esc(trunc(itemTitle(o), 160))}</div><div class="s">${esc(itemSrc(o))}</div></div>
+      <button class="btn" data-go="${o.id}">${ic('open')} Vai</button><button class="ib" data-ll="${l.id}" aria-label="Etichetta">${ic('edit')}</button><button class="ib" data-ul="${l.id}" aria-label="Scollega">${ic('x')}</button></div>`;
+  }).join('');
+  const el = openSheet(title, `
+    ${k === 'hl' ? `<div class="quote" style="border-color:${HEX[it.color]}">${esc(it.text)}</div><div class="colors">${COLOR_KEYS.map(c => `<button class="dot${c === it.color ? ' on' : ''}" data-col="${c}" style="background:${HEX[c]}" aria-label="Colore"></button>`).join('')}</div>` : ''}
+    ${k === 'page' ? `<input class="txt" id="itTitle" value="${esc(it.text)}" placeholder="Titolo della pagina">` : ''}
+    ${k === 'text' ? '' : `<p class="muted" style="margin:10px 0 0">${esc(itemSrc(it))}</p>`}
+    <div class="lbl">${k === 'text' ? 'Testo' : 'Nota'}</div>
+    <textarea class="note" id="itNote" placeholder="Scrivi qui i tuoi appunti…">${esc(k === 'text' ? it.text : it.note)}</textarea>
+    <div class="lbl">Portali ${links.length ? '(' + links.length + ')' : ''}</div>
+    ${portals || '<p class="muted" style="margin:0">Collega questo punto a una pagina o a una sottolineatura di qualsiasi libro: poi da qui ci salti con un tocco.</p>'}
+    <div class="actions">
+      <button class="btn primary" id="itLink">${ic('link')} Collega a…</button>
+      <button class="btn" id="itMap">${ic('map')} Aggiungi a mappa</button>
+      ${view !== 'read' && k !== 'text' ? `<button class="btn" id="itOpen">${ic('open')} Apri nel libro</button>` : ''}
+      <button class="btn danger" id="itDel">${ic('trash')} Elimina</button>
+    </div>`, () => { refreshAfterEdit(); });
+  const note = $('#itNote', el);
+  const saveNote = debounce(async () => { if (k === 'text') it.text = note.value; else it.note = note.value; await save(k === 'hl' ? 'hls' : 'nodes', it); }, 350);
+  note.oninput = saveNote;
+  const tt = $('#itTitle', el); if (tt) tt.oninput = debounce(async () => { it.text = tt.value; await save('nodes', it); }, 350);
+  $$('[data-col]', el).forEach(b => b.onclick = async () => {
+    if (R.kind === 'epub') removeEpubMark(it);
+    it.color = b.dataset.col; await save('hls', it);
+    $$('[data-col]', el).forEach(x => x.classList.toggle('on', x === b));
+    $('.quote', el).style.borderColor = HEX[it.color];
+    if (R.book && R.book.id === it.bookId) { if (R.kind === 'pdf') new Set(it.loc.rects.map(r => r.p)).forEach(drawPageHls); else addEpubMark(it); }
+  });
+  $$('[data-go]', el).forEach(b => b.onclick = () => { closeSheet(); openItem(b.dataset.go); });
+  $$('[data-ul]', el).forEach(b => b.onclick = async () => { await remove('links', b.dataset.ul); closeSheet(); openItemSheet(id); });
+  $$('[data-ll]', el).forEach(b => b.onclick = async () => {
+    const l = S.links.find(x => x.id === b.dataset.ll); closeSheet();
+    const t = await askText('Etichetta del collegamento', l.label || '', { placeholder: 'Es. vedi anche, contraddice, esempio di' });
+    if (t !== null) { l.label = t; await save('links', l); }
+    openItemSheet(id);
+  });
+  $('#itLink', el).onclick = () => { closeSheet(); pickItem('Collega a…', id, async other => { await linkItems(id, other); openItemSheet(id); }); };
+  $('#itMap', el).onclick = () => { closeSheet(); chooseMap(id); };
+  const op = $('#itOpen', el); if (op) op.onclick = () => { closeSheet(); openItem(id); };
+  $('#itDel', el).onclick = async () => {
+    closeSheet();
+    if (!await askConfirm('Eliminare?', 'Verranno eliminati anche i suoi collegamenti e la sua posizione nelle mappe.')) return;
+    if (R.kind === 'epub' && k === 'hl') removeEpubMark(it);
+    const page = it.loc && it.loc.page;
+    await deleteItem(id);
+    if (R.kind === 'pdf' && page) { const rp = it.loc.rects ? new Set(it.loc.rects.map(r => r.p)) : new Set([page]); rp.forEach(drawPageHls); }
+    refreshAfterEdit();
+  };
+  if (focusNote) setTimeout(() => note.focus(), 80);
+}
+function refreshAfterEdit() {
+  if (view === 'read' && !$('#side').hidden) renderSide();
+  if (view === 'map') renderMap();
+  if (view === 'lib') renderLib();
+}
+function openItem(id) {
+  const it = itemById(id); if (!it) return;
+  if (kindOf(it) === 'text') {
+    const m = S.maps.find(x => x.pos[id]);
+    if (m) openMap(m.id, id); else openItemSheet(id);
+    return;
+  }
+  if (view === 'read' && R.book && R.book.id === it.bookId) jumpTo(it);
+  else openBook(it.bookId, it);
+}
+function pickItem(title, exclude, cb) {
+  let q = '';
+  const el = openSheet(title, `<label class="search">${ic('search')}<input id="pq" type="search" placeholder="Cerca per testo, nota o titolo del libro"></label><div id="pl"></div>`);
+  const draw = () => {
+    const items = allItems().filter(i => i.id !== exclude && matchQ(i, q.toLowerCase().trim()))
+      .sort((a, b) => (R.book && b.bookId === R.book.id) - (R.book && a.bookId === R.book.id) || b.created - a.created).slice(0, 150);
+    $('#pl', el).innerHTML = items.length ? `<div class="list">${items.map(i => itemRow(i)).join('')}</div>` : '<p class="muted">Niente da collegare: prima crea qualche sottolineatura o pagina segnata.</p>';
+    $$('[data-item]', el).forEach(r => r.onclick = () => { closeSheet(); cb(r.dataset.item); });
+  };
+  $('#pq', el).oninput = e => { q = e.target.value; draw(); };
+  draw();
+}
+function chooseMap(itemId) {
+  const el = openSheet('Aggiungi a mappa', `<div class="menu">${S.maps.map(m => `<button class="mi" data-m="${m.id}">${ic('map')}<span>${esc(m.name)}<small>${Object.keys(m.pos).length} elementi${m.pos[itemId] ? ' · già presente' : ''}</small></span></button>`).join('')}
+    <button class="mi" data-new style="color:var(--accent)">${ic('plus')}<span>Nuova mappa</span></button></div>`);
+  $$('[data-m]', el).forEach(b => b.onclick = async () => { closeSheet(); const m = S.maps.find(x => x.id === b.dataset.m); await placeOnMap(m, itemId); toast(`Aggiunto a «${m.name}»`, 'Apri', () => openMap(m.id, itemId)); });
+  $('[data-new]', el).onclick = async () => { closeSheet(); const m = await newMap(); if (m) { await placeOnMap(m, itemId); toast(`Aggiunto a «${m.name}»`, 'Apri', () => openMap(m.id, itemId)); } };
+}
+async function placeOnMap(m, id, near) {
+  if (m.pos[id]) return;
+  const ps = Object.entries(m.pos);
+  let p;
+  const anchorId = near || linksOf(id).map(l => otherEnd(l, id)).find(o => m.pos[o]);
+  if (anchorId && m.pos[anchorId]) {
+    const a = m.pos[anchorId], n = ps.length, ang = n * 2.4;
+    p = { x: a.x + Math.cos(ang) * 300, y: a.y + Math.sin(ang) * 220 };
+  } else if (ps.length) {
+    const maxX = Math.max(...ps.map(([, v]) => v.x)), avgY = ps.reduce((s, [, v]) => s + v.y, 0) / ps.length;
+    p = { x: maxX + 300, y: avgY + ((ps.length % 3) - 1) * 160 };
+  } else p = { x: 0, y: 0 };
+  m.pos[id] = { x: Math.round(p.x), y: Math.round(p.y) };
+  m.updated = Date.now();
+  await save('maps', m);
+}
+
+/* ---------- mappa ---------- */
+const M = { map: null, tx: 0, ty: 0, k: 1, sel: null, selEdge: null, linking: null, ptrs: new Map(), drag: null, pinch: null, lastTap: { id: null, t: 0 } };
+const saveMapView = debounce(() => { if (M.map) { M.map.view = { tx: M.tx, ty: M.ty, k: M.k }; save('maps', M.map); } }, 600);
+function openMap(id, focusId, push = true) {
+  const m = S.maps.find(x => x.id === id); if (!m) return;
+  if (view === 'map' && push && M.map && M.map.id !== id) back.push(here());
+  M.map = m; M.sel = focusId || null; M.selEdge = null; M.linking = null;
+  go('map', push);
+  $('#mapName').textContent = m.name;
+  renderMap();
+  if (focusId && m.pos[focusId]) centerOn(m.pos[focusId]);
+  else if (m.view) { Object.assign(M, { tx: m.view.tx, ty: m.view.ty, k: m.view.k }); applyView(); }
+  else fitMap();
+}
+function nodeHtml(it) {
+  const k = kindOf(it);
+  if (k === 'text') return `<div class="bar-c" style="background:${HEX[it.color || 'blue']}"></div><div class="t">${esc(it.text || 'Nota')}</div>`;
+  const lc = linksOf(it.id).length;
+  if (k === 'page') return `<div class="bar-c" style="background:var(--accent)"></div><div class="p">${ic('mark')}<span>${esc(trunc(it.text || 'Pagina ' + locLabel(it), 80))}</span></div>${it.note ? `<div class="n">${esc(trunc(it.note, 220))}</div>` : ''}<div class="src">${esc(itemSrc(it))}</div>`;
+  return `<div class="bar-c" style="background:${HEX[it.color]}"></div><div class="q">${esc(trunc(it.text, 260))}</div>${it.note ? `<div class="n">${esc(trunc(it.note, 220))}</div>` : ''}<div class="src">${esc(itemSrc(it))}</div>`;
+}
+function renderMap() {
+  const m = M.map; if (!m) return;
+  const box = $('#nodes'); box.innerHTML = '';
+  for (const [id, p] of Object.entries(m.pos)) {
+    const it = itemById(id); if (!it) { delete m.pos[id]; continue; }
+    const d = document.createElement('div');
+    d.className = 'mnode k-' + kindOf(it) + (M.sel === id ? ' sel' : '') + (M.linking === id ? ' src-link' : '');
+    d.dataset.id = id; d.style.left = p.x + 'px'; d.style.top = p.y + 'px';
+    d.innerHTML = nodeHtml(it);
+    box.appendChild(d);
+  }
+  drawEdges(); applyView(); updMapUi();
+  if (!Object.keys(m.pos).length) $('#linkHint').hidden = true;
+}
+function drawEdges() {
+  const m = M.map; let h = '';
+  for (const l of S.links) {
+    const a = m.pos[l.a], b = m.pos[l.b]; if (!a || !b) continue;
+    const sel = M.selEdge === l.id;
+    h += `<line class="e${sel ? ' sel' : ''}" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}"/><line class="hit" data-edge="${l.id}" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}"/>`;
+    if (l.label) h += `<text x="${(a.x + b.x) / 2}" y="${(a.y + b.y) / 2}">${esc(trunc(l.label, 40))}</text>`;
+  }
+  $('#edgesG').innerHTML = h;
+}
+function applyView() { $('#world').style.transform = `translate(${M.tx}px,${M.ty}px) scale(${M.k})`; }
+function centerOn(p) {
+  const st = $('#mapStage');
+  M.k = Math.max(M.k, .8);
+  M.tx = st.clientWidth / 2 - p.x * M.k; M.ty = st.clientHeight / 2 - p.y * M.k; applyView(); saveMapView();
+}
+function fitMap() {
+  const ps = Object.values(M.map.pos), st = $('#mapStage');
+  if (!ps.length) { M.k = 1; M.tx = st.clientWidth / 2; M.ty = st.clientHeight / 2; applyView(); return; }
+  const x1 = Math.min(...ps.map(p => p.x)) - 160, x2 = Math.max(...ps.map(p => p.x)) + 160;
+  const y1 = Math.min(...ps.map(p => p.y)) - 120, y2 = Math.max(...ps.map(p => p.y)) + 120;
+  M.k = Math.min(1.2, Math.max(.2, Math.min(st.clientWidth / (x2 - x1), (st.clientHeight - 90) / (y2 - y1))));
+  M.tx = st.clientWidth / 2 - (x1 + x2) / 2 * M.k; M.ty = (st.clientHeight - 70) / 2 - (y1 + y2) / 2 * M.k;
+  applyView(); saveMapView();
+}
+function stageCenterWorld() { const st = $('#mapStage'); return { x: (st.clientWidth / 2 - M.tx) / M.k, y: (st.clientHeight / 2 - M.ty) / M.k }; }
+function updMapUi() {
+  const A = $('#mapActions'); const hint = $('#linkHint');
+  hint.hidden = !M.linking;
+  if (M.linking) hint.textContent = 'Tocca il nodo da collegare';
+  let h = '';
+  if (M.linking) h = `<button class="fb" data-a="cancel">${ic('x')} Annulla collegamento</button>`;
+  else if (M.sel) {
+    const it = itemById(M.sel), k = kindOf(it);
+    const hidden = linksOf(M.sel).map(l => otherEnd(l, M.sel)).filter(o => !M.map.pos[o] && itemById(o)).length;
+    h = (k !== 'text' ? `<button class="fb acc" data-a="open">${ic('open')} Apri pagina</button>` : '') +
+      `<button class="fb" data-a="edit">${ic('edit')} ${k === 'text' ? 'Modifica' : 'Nota'}</button>` +
+      `<button class="fb" data-a="link">${ic('link')} Collega</button>` +
+      (hidden ? `<button class="fb" data-a="expand">${ic('expand')} Mostra collegati (${hidden})</button>` : '') +
+      (k === 'text' ? `<button class="fb" data-a="color"><span class="dot" style="width:20px;height:20px;border-width:0;background:${HEX[it.color || 'blue']}"></span> Colore</button>` : '') +
+      `<button class="fb dng" data-a="rm">${ic('trash')} ${k === 'text' ? 'Elimina' : 'Togli'}</button>`;
+  } else if (M.selEdge) {
+    h = `<button class="fb" data-a="elabel">${ic('edit')} Etichetta</button><button class="fb dng" data-a="edel">${ic('trash')} Scollega</button>`;
+  } else {
+    h = `<button class="fb acc" data-a="addnote">${ic('note')} Nuova nota</button><button class="fb acc" data-a="additem">${ic('plus')} Da libri e appunti</button>`;
+  }
+  A.innerHTML = h;
+}
+$('#mapActions').addEventListener('click', async e => {
+  const b = e.target.closest('[data-a]'); if (!b) return;
+  const a = b.dataset.a, m = M.map;
+  if (a === 'cancel') { M.linking = null; renderMap(); }
+  if (a === 'open') openItem(M.sel);
+  if (a === 'edit') {
+    const it = itemById(M.sel);
+    if (kindOf(it) === 'text') { const t = await askText('Modifica nota', it.text, { multiline: true }); if (t) { it.text = t; await save('nodes', it); renderMap(); } }
+    else openItemSheet(M.sel);
+  }
+  if (a === 'link') { M.linking = M.sel; M.sel = null; renderMap(); }
+  if (a === 'expand') {
+    for (const o of linksOf(M.sel).map(l => otherEnd(l, M.sel))) if (!m.pos[o] && itemById(o)) await placeOnMap(m, o, M.sel);
+    renderMap();
+  }
+  if (a === 'color') { const it = itemById(M.sel); it.color = COLOR_KEYS[(COLOR_KEYS.indexOf(it.color || 'blue') + 1) % COLOR_KEYS.length]; await save('nodes', it); renderMap(); }
+  if (a === 'rm') {
+    const it = itemById(M.sel);
+    if (kindOf(it) === 'text' && !S.maps.some(o => o !== m && o.pos[it.id])) {
+      if (!await askConfirm('Eliminare la nota?', 'La nota e i suoi collegamenti verranno eliminati.')) return;
+      await deleteItem(it.id);
+    } else { delete m.pos[M.sel]; await save('maps', m); }
+    M.sel = null; renderMap();
+  }
+  if (a === 'elabel') {
+    const l = S.links.find(x => x.id === M.selEdge);
+    const t = await askText('Etichetta del collegamento', l.label || '', { placeholder: 'Es. vedi anche, causa, esempio di' });
+    if (t !== null) { l.label = t; await save('links', l); renderMap(); }
+  }
+  if (a === 'edel') { await remove('links', M.selEdge); M.selEdge = null; renderMap(); }
+  if (a === 'addnote') {
+    const t = await askText('Nuova nota', '', { multiline: true, ok: 'Aggiungi', placeholder: 'Un concetto, una domanda, un titolo di capitolo…' });
+    if (!t) return;
+    const nd = { id: uid(), kind: 'text', text: t, color: 'blue', created: Date.now() };
+    await save('nodes', nd);
+    const c = stageCenterWorld(); m.pos[nd.id] = { x: Math.round(c.x), y: Math.round(c.y) }; m.updated = Date.now(); await save('maps', m);
+    M.sel = nd.id; renderMap();
+  }
+  if (a === 'additem') pickItem('Aggiungi alla mappa', null, async id => {
+    if (m.pos[id]) { M.sel = id; renderMap(); centerOn(m.pos[id]); return; }
+    const c = stageCenterWorld(); m.pos[id] = { x: Math.round(c.x + (Math.random() - .5) * 80), y: Math.round(c.y + (Math.random() - .5) * 80) };
+    m.updated = Date.now(); await save('maps', m); M.sel = id; renderMap();
+  });
+});
+(() => {
+  const st = $('#mapStage');
+  const center = () => { const p = [...M.ptrs.values()]; return { x: (p[0].x + p[1].x) / 2, y: (p[0].y + p[1].y) / 2, d: Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y) }; };
+  let raf = 0;
+  st.addEventListener('pointerdown', e => {
+    if (e.target.closest('#mapActions')) return;
+    M.ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    try { st.setPointerCapture(e.pointerId); } catch {}
+    if (M.ptrs.size === 2) {
+      const c = center(), b = st.getBoundingClientRect();
+      M.pinch = { d: c.d, k: M.k, wx: (c.x - b.left - M.tx) / M.k, wy: (c.y - b.top - M.ty) / M.k };
+      M.drag = null; return;
+    }
+    if (M.ptrs.size > 2) return;
+    const nodeEl = e.target.closest('.mnode');
+    const id = nodeEl && nodeEl.dataset.id;
+    // le linee sono sotto ai nodi e senza eventi: cerco il collegamento sotto il dito
+    let edge = null;
+    if (!nodeEl) { const hit = document.elementsFromPoint(e.clientX, e.clientY).find(x => x.dataset && x.dataset.edge); edge = hit && hit.dataset.edge; }
+    M.drag = { id, edge, sx: e.clientX, sy: e.clientY, moved: false, ox: id ? M.map.pos[id].x : M.tx, oy: id ? M.map.pos[id].y : M.ty, el: nodeEl };
+  });
+  st.addEventListener('pointermove', e => {
+    if (!M.ptrs.has(e.pointerId)) return;
+    M.ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (M.pinch && M.ptrs.size >= 2) {
+      const c = center(), b = st.getBoundingClientRect();
+      M.k = Math.min(2.5, Math.max(.15, M.pinch.k * c.d / M.pinch.d));
+      M.tx = c.x - b.left - M.pinch.wx * M.k; M.ty = c.y - b.top - M.pinch.wy * M.k;
+      applyView(); return;
+    }
+    const d = M.drag; if (!d) return;
+    const dx = e.clientX - d.sx, dy = e.clientY - d.sy;
+    if (!d.moved && Math.hypot(dx, dy) > 6) d.moved = true;
+    if (!d.moved) return;
+    if (d.id) {
+      const p = M.map.pos[d.id]; p.x = Math.round(d.ox + dx / M.k); p.y = Math.round(d.oy + dy / M.k);
+      d.el.style.left = p.x + 'px'; d.el.style.top = p.y + 'px';
+      cancelAnimationFrame(raf); raf = requestAnimationFrame(drawEdges);
+    } else { M.tx = d.ox + dx; M.ty = d.oy + dy; applyView(); }
+  });
+  const end = async e => {
+    if (!M.ptrs.has(e.pointerId)) return;
+    M.ptrs.delete(e.pointerId);
+    if (M.pinch) { if (M.ptrs.size < 2) { M.pinch = null; saveMapView(); } return; }
+    const d = M.drag; M.drag = null; if (!d) return;
+    if (d.moved) { if (d.id) { M.map.updated = Date.now(); save('maps', M.map); } else saveMapView(); return; }
+    if (e.type === 'pointercancel') return;
+    // tocco
+    if (d.id) {
+      if (M.linking && M.linking !== d.id) { const a = M.linking; M.linking = null; await linkItems(a, d.id); M.sel = d.id; renderMap(); return; }
+      const now = Date.now();
+      if (M.lastTap.id === d.id && now - M.lastTap.t < 380) { M.lastTap = { id: null, t: 0 }; const it = itemById(d.id); if (kindOf(it) !== 'text') openItem(d.id); return; }
+      M.lastTap = { id: d.id, t: now };
+      M.sel = d.id; M.selEdge = null; renderMap();
+    } else if (d.edge) { M.selEdge = d.edge; M.sel = null; M.linking = null; renderMap(); }
+    else { if (M.sel || M.selEdge || M.linking) { M.sel = M.selEdge = M.linking = null; renderMap(); } }
+  };
+  st.addEventListener('pointerup', end);
+  st.addEventListener('pointercancel', end);
+  st.addEventListener('wheel', e => {
+    e.preventDefault();
+    const b = st.getBoundingClientRect(), cx = e.clientX - b.left, cy = e.clientY - b.top;
+    if (e.ctrlKey || e.metaKey || Math.abs(e.deltaY) > 40 && !e.deltaX) {
+      const wx = (cx - M.tx) / M.k, wy = (cy - M.ty) / M.k;
+      M.k = Math.min(2.5, Math.max(.15, M.k * Math.exp(-e.deltaY * .0025)));
+      M.tx = cx - wx * M.k; M.ty = cy - wy * M.k;
+    } else { M.tx -= e.deltaX; M.ty -= e.deltaY; }
+    applyView(); saveMapView();
+  }, { passive: false });
+})();
+
+/* ---------- eventi interfaccia ---------- */
+$('#tabs').onclick = e => { const b = e.target.closest('[data-tab]'); if (b) { tab = b.dataset.tab; renderLib(); $('#libScroll').scrollTop = 0; } };
+$('#btnImport').onclick = () => $('#fileIn').click();
+$('#btnMenu').onclick = openMenu;
+$('#fileIn').onchange = e => { const f = e.target.files; importFiles(f).finally(() => e.target.value = ''); };
+$('#readBack').onclick = goBack;
+$('#mapBack').onclick = () => { M.sel = M.selEdge = M.linking = null; goBack(); };
+$('#mapFit').onclick = fitMap;
+$('#mapName').onclick = async () => { const t = await askText('Rinomina mappa', M.map.name); if (t) { M.map.name = t; await save('maps', M.map); $('#mapName').textContent = t; } };
+$('#btnMark').onclick = markPage;
+$('#btnSide').onclick = () => { const s = $('#side'); s.hidden = !s.hidden; $('#btnSide').classList.toggle('on', !s.hidden); if (!s.hidden) renderSide(); if (R.kind === 'pdf') setTimeout(() => setZoom(R.book.zoom || 1), 30); };
+$('#sideClose').onclick = () => { $('#side').hidden = true; $('#btnSide').classList.remove('on'); if (R.kind === 'pdf') setTimeout(() => setZoom(R.book.zoom || 1), 30); };
+$('#zIn').onclick = () => { if (R.kind === 'pdf') setZoom((R.book.zoom || 1) * 1.2); else epubFont(10); };
+$('#zOut').onclick = () => { if (R.kind === 'pdf') setZoom((R.book.zoom || 1) / 1.2); else epubFont(-10); };
+function epubFont(d) { R.book.font = Math.min(200, Math.max(70, (R.book.font || 100) + d)); save('books', R.book); R.rendition && R.rendition.themes.fontSize(R.book.font + '%'); }
+$('#pageInfo').onclick = async () => {
+  if (R.kind === 'pdf') {
+    const t = await askText(`Vai alla pagina (1 a ${R.pdf.numPages})`, String(R.cur), { ok: 'Vai' });
+    const n = parseInt(t, 10); if (n) scrollToPdf(n, 0);
+  } else if (R.kind === 'epub' && R.toc.length) {
+    const el = openSheet('Indice', `<div class="menu">${R.toc.map((t, i) => `<button class="mi" data-t="${i}"><span>${esc(t.label.trim())}</span></button>`).join('')}</div>`);
+    $$('[data-t]', el).forEach(b => b.onclick = () => { closeSheet(); R.rendition.display(R.toc[+b.dataset.t].href); });
+  }
+};
+let lastW = innerWidth;
+addEventListener('resize', debounce(() => {
+  if (Math.abs(innerWidth - lastW) < 20) return; lastW = innerWidth;
+  if (view === 'read' && R.kind === 'pdf') setZoom(R.book.zoom || 1);
+}, 250));
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyEpubTheme);
+addEventListener('keydown', e => { if (e.key === 'Escape') { if (sheetClose) closeSheet(); else hideSelBar(); } });
+// trascina file (comodo dal PC)
+let dragN = 0;
+addEventListener('dragenter', e => { if (e.dataTransfer && [...e.dataTransfer.types].includes('Files')) { dragN++; $('#drop').hidden = false; } });
+addEventListener('dragleave', () => { if (--dragN <= 0) { dragN = 0; $('#drop').hidden = true; } });
+addEventListener('dragover', e => e.preventDefault());
+addEventListener('drop', e => { e.preventDefault(); dragN = 0; $('#drop').hidden = true; if (e.dataTransfer.files.length) importFiles(e.dataTransfer.files); });
+
+/* ---------- avvio ---------- */
+(async () => {
+  try { await openDB(); await loadAll(); }
+  catch (e) { document.body.innerHTML = '<p style="padding:24px">Impossibile aprire la memoria locale. Se sei in navigazione privata, aprila in una scheda normale.</p>'; return; }
+  renderLib();
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
+})();
+</script>
+</body>
+</html>
