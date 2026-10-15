@@ -92,6 +92,27 @@ svg.i{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stro
 .badge{display:inline-flex;align-items:center;gap:3px;color:var(--accent);font-weight:600}
 .badge svg.i{width:14px;height:14px}
 
+/* cartelle e riordino */
+.shelfbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.crumbs{display:flex;align-items:center;gap:2px;flex-wrap:wrap;flex:1;min-width:0}
+.crumb{padding:6px 10px;border-radius:10px;font-weight:700;font-size:17px;color:var(--ink-2)}
+.crumb:last-child{color:var(--ink)}
+.crumbs .gt{color:var(--ink-3)}
+.crumb.drop-into{background:var(--accent-soft);color:var(--accent);outline:2px solid var(--accent)}
+.tip{font-size:13px;color:var(--ink-3);margin:-6px 0 14px 2px}
+.card{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.card img{-webkit-user-drag:none;pointer-events:none}
+.card.lifting{opacity:.25}
+.card.ins-before::before,.card.ins-after::after{content:"";position:absolute;top:0;bottom:34px;width:4px;border-radius:2px;background:var(--accent)}
+.card.ins-before::before{left:-11px}
+.card.ins-after::after{right:-11px}
+.card.drop-into .cover{outline:3px solid var(--accent);outline-offset:3px}
+.ghost{position:fixed;z-index:70;pointer-events:none;transform:rotate(-2.5deg) scale(1.05);opacity:.92;filter:drop-shadow(0 14px 24px rgba(0,0,0,.25))}
+.cover.folder{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
+.cover.folder svg.i{width:64px;height:64px;stroke-width:1.3}
+.cover.folder .cnt{position:absolute;bottom:10px;left:0;right:0;text-align:center;font-size:12px;font-weight:700}
+.cover.mapc svg.prev{width:100%;height:100%}
+
 /* lettore */
 #readWrap{flex:1;position:relative;display:flex;min-height:0}
 #pdfScroll{flex:1;overflow:auto;position:relative;background:var(--bg);touch-action:pan-x pan-y;-webkit-overflow-scrolling:touch}
@@ -107,6 +128,8 @@ svg.i{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stro
 .textLayer ::selection{background:rgba(35,64,216,.28)}
 .textLayer .endOfContent{display:block;position:absolute;inset:100% 0 0;z-index:-1;cursor:default;user-select:none}
 #epubBox{flex:1;min-width:0;background:var(--paper)}
+#epubBox .mg-ul rect{stroke:transparent!important}
+#epubBox .mg-ul line{stroke:inherit!important;stroke-width:2.5px;stroke-opacity:1}
 @media (prefers-color-scheme:dark){#epubBox{background:#16181C}}
 #side{flex:none;width:340px;border-left:1px solid var(--line);background:var(--surface);display:flex;flex-direction:column;min-height:0}
 #side header{display:flex;align-items:center;padding:10px 12px 6px 16px;gap:8px}
@@ -118,7 +141,11 @@ svg.i{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stro
   #side{position:absolute;right:0;top:0;bottom:0;width:min(360px,92vw);box-shadow:var(--shadow);z-index:6}
 }
 #selBar{position:fixed;z-index:30;display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:999px;padding:6px 8px;-webkit-user-select:none;user-select:none}
-.dot{width:34px;height:34px;border-radius:50%;border:3px solid var(--surface);box-shadow:0 0 0 1px var(--line)}
+.dot{width:34px;height:34px;border-radius:50%;border:3px solid var(--surface);box-shadow:0 0 0 1px var(--line);background:var(--c)}
+.dot.u{background:var(--surface-2) linear-gradient(var(--c),var(--c)) 50% 72%/60% 4px no-repeat}
+.seg svg.i{width:17px;height:17px;vertical-align:-3px}
+.hlLayer .ul{position:absolute;height:3px;border-radius:2px;opacity:.95}
+.hlLayer .ul.flash{outline:3px solid var(--accent);outline-offset:3px}
 .dot.on{box-shadow:0 0 0 2px var(--ink)}
 #selBar .sep{width:1px;height:26px;background:var(--line);margin:0 2px}
 #selBar .tb{height:36px;padding:0 12px;border-radius:999px;font-weight:600;display:flex;align-items:center;gap:6px;color:var(--accent)}
@@ -261,6 +288,11 @@ textarea.note:focus,input.txt:focus{border-color:var(--accent)}
     <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
     <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 15V4M7 9l5-5 5 5M5 20h14"/></symbol>
     <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2.5h8a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+    <symbol id="i-newfolder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2.5h8a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM12 11v6M9 14h6"/></symbol>
+    <symbol id="i-move" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2.5h8a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM9 14h6M13 11.5l2.5 2.5-2.5 2.5"/></symbol>
+    <symbol id="i-marker" viewBox="0 0 24 24"><path d="M15 4l5 5-8 8H7v-5zM4 20h7"/></symbol>
+    <symbol id="i-under" viewBox="0 0 24 24"><path d="M7 4v6a5 5 0 0 0 10 0V4M5 20h14"/></symbol>
     <symbol id="i-expand" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/></symbol>
   </defs>
 </svg>
@@ -279,17 +311,17 @@ const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const trunc = (s, n) => (s = String(s || ''), s.length > n ? s.slice(0, n).trimEnd() + '…' : s);
 const ic = n => `<svg class="i"><use href="#i-${n}"/></svg>`;
-const HEX = { yellow: '#FFD43B', green: '#4CD98A', blue: '#5AB4FA', pink: '#FF7AB8' };
+const HEX = { yellow: '#FFD43B', green: '#4CD98A', blue: '#5AB4FA', pink: '#FF7AB8', orange: '#FF9F43', purple: '#A78BFA' };
 const COLOR_KEYS = Object.keys(HEX);
 const fmtMB = b => (b / 1048576).toFixed(b > 104857600 ? 0 : 1) + ' MB';
 const debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
 
 /* ---------- database locale (IndexedDB) ---------- */
-const STORES = ['books', 'files', 'hls', 'nodes', 'links', 'maps'];
+const STORES = ['books', 'files', 'hls', 'nodes', 'links', 'maps', 'folders'];
 let db;
 function openDB() {
   return new Promise((res, rej) => {
-    const r = indexedDB.open('margini', 1);
+    const r = indexedDB.open('margini', 2);
     r.onupgradeneeded = () => { const d = r.result; for (const s of STORES) if (!d.objectStoreNames.contains(s)) d.createObjectStore(s, { keyPath: 'id' }); };
     r.onsuccess = () => { db = r.result; res(); };
     r.onerror = () => rej(r.error);
@@ -302,7 +334,7 @@ const dbGet = (s, id) => wrap(os(s).get(id));
 const dbDel = (s, id) => wrap(os(s, 'readwrite').delete(id));
 const dbAll = s => wrap(os(s).getAll());
 
-const S = { books: [], hls: [], nodes: [], links: [], maps: [] };
+const S = { books: [], hls: [], nodes: [], links: [], maps: [], folders: [] };
 async function loadAll() { for (const k of Object.keys(S)) S[k] = await dbAll(k); }
 async function save(store, obj) {
   await dbPut(store, obj);
@@ -465,7 +497,7 @@ async function addBook(name, blob, type, res) {
   const id = uid();
   const data = new Blob([await blob.arrayBuffer()], { type: type === 'pdf' ? 'application/pdf' : 'application/epub+zip' });
   await dbPut('files', { id, blob: data });
-  const book = { id, title, type, size: data.size, added: Date.now(), opened: 0, pos: null, zoom: 1, font: 100, cover: null };
+  const book = { id, title, type, size: data.size, added: Date.now(), opened: 0, pos: null, zoom: 1, font: 100, cover: null, folder: curFolder.books, order: topOrder('books', curFolder.books) };
   try { book.cover = await makeCover(data, type); } catch (e) { console.warn('copertina', e); }
   await save('books', book);
   res.added++;
@@ -497,7 +529,7 @@ async function makeCover(blob, type) {
 
 /* ---------- backup ---------- */
 async function restoreBackup(data, zip) {
-  for (const k of ['books', 'hls', 'nodes', 'links', 'maps']) for (const r of (data[k] || [])) await dbPut(k, r);
+  for (const k of ['books', 'hls', 'nodes', 'links', 'maps', 'folders']) for (const r of (data[k] || [])) await dbPut(k, r);
   if (zip) for (const b of (data.books || [])) {
     const f = zip.file(`files/${b.id}.${b.type}`);
     if (f) await dbPut('files', { id: b.id, blob: new Blob([await f.async('arraybuffer')], { type: b.type === 'pdf' ? 'application/pdf' : 'application/epub+zip' }) });
@@ -557,43 +589,271 @@ let tab = 'books', noteQuery = '';
 function renderLib() {
   $$('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
   const body = $('#libBody');
-  if (tab === 'books') return renderBooks(body);
   if (tab === 'notes') return renderNotes(body);
-  return renderMaps(body);
+  return renderShelf(body, tab);
 }
-function renderBooks(body) {
-  if (!S.books.length) {
-    body.innerHTML = `<div class="empty"><img src="icon-180.png" width="84" height="84" style="border-radius:20px" alt=""><h2>La tua libreria è vuota</h2><p>Importa PDF, EPUB o file ZIP che li contengono. Restano solo su questo dispositivo.</p><button class="btn primary" id="emptyImp">${ic('plus')} Importa libri</button></div>`;
-    $('#emptyImp').onclick = () => $('#fileIn').click();
-    return;
+/* --- scaffale: libri, mappe e cartelle, in ordine manuale --- */
+const curFolder = { books: null, maps: null };
+const DnD = { start: null, timer: 0, drag: null, suppress: false };
+const kindStore = { folder: 'folders', book: 'books', map: 'maps' };
+const recency = x => x.opened || x.updated || x.added || x.created || 0;
+const folderById = id => S.folders.find(f => f.id === id);
+function entriesOf(t, parent) {
+  const fs = S.folders.filter(f => f.tab === t && (f.parent || null) === parent).map(f => ({ kind: 'folder', obj: f }));
+  const xs = S[t].filter(x => (x.folder || null) === parent).map(x => ({ kind: t === 'books' ? 'book' : 'map', obj: x }));
+  return [...fs, ...xs];
+}
+function sortedEntries(t, parent) {
+  return entriesOf(t, parent).sort((a, b) => {
+    const ao = a.obj.order, bo = b.obj.order;
+    if (ao != null && bo != null) return ao - bo;
+    if (ao != null) return -1;
+    if (bo != null) return 1;
+    if ((a.kind === 'folder') !== (b.kind === 'folder')) return a.kind === 'folder' ? -1 : 1;
+    return recency(b.obj) - recency(a.obj);
+  });
+}
+function topOrder(t, parent) { return Math.min(0, ...entriesOf(t, parent).map(e => e.obj.order ?? 0)) - 1; }
+async function writeOrder(list) {
+  for (let i = 0; i < list.length; i++) { const o = list[i].obj; if (o.order !== i) { o.order = i; await save(kindStore[list[i].kind], o); } }
+}
+function entryOf(kind, id) {
+  const obj = kind === 'folder' ? folderById(id) : S[kind === 'book' ? 'books' : 'maps'].find(x => x.id === id);
+  return obj ? { kind, obj } : null;
+}
+function folderPath(id) { const out = []; let f = folderById(id); while (f) { out.unshift(f); f = folderById(f.parent); } return out; }
+function isInside(folderId, targetId) { return folderPath(targetId).some(f => f.id === folderId); }
+async function moveEntry(e, folderId, t) {
+  folderId = folderId || null;
+  if (e.kind === 'folder' && folderId && isInside(e.obj.id, folderId)) { toast('Non puoi mettere una cartella dentro sé stessa'); return false; }
+  const key = e.kind === 'folder' ? 'parent' : 'folder';
+  if ((e.obj[key] || null) === folderId) return false;
+  e.obj[key] = folderId; e.obj.order = topOrder(t, folderId);
+  await save(kindStore[e.kind], e.obj);
+  return true;
+}
+async function newFolder(t) {
+  const name = await askText('Nuova cartella', '', { ok: 'Crea', placeholder: t === 'books' ? 'Es. Primo anno, Romanzi' : 'Es. Esame di giugno' });
+  if (!name) return;
+  await save('folders', { id: uid(), name, tab: t, parent: curFolder[t], order: topOrder(t, curFolder[t]), created: Date.now() });
+  renderLib();
+}
+function folderCount(f) { return entriesOf(f.tab, f.id).length; }
+
+function mapPreview(m) {
+  const ps = Object.entries(m.pos).map(([id, p]) => ({ id, p, it: itemById(id) })).filter(x => x.it);
+  if (!ps.length) return `<svg class="prev" viewBox="0 0 100 140">${ic('map').replace('class="i"', 'class="i" x="30" y="50" width="40" height="40"')}</svg>`;
+  const xs = ps.map(x => x.p.x), ys = ps.map(x => x.p.y);
+  const x1 = Math.min(...xs), x2 = Math.max(...xs), y1 = Math.min(...ys), y2 = Math.max(...ys);
+  const k = Math.min(70 / Math.max(1, x2 - x1), 100 / Math.max(1, y2 - y1), .2);
+  const cx = (x1 + x2) / 2, cy = (y1 + y2) / 2;
+  const P = p => [50 + (p.x - cx) * k, 70 + (p.y - cy) * k];
+  let h = '';
+  for (const l of S.links) { const a = m.pos[l.a], b = m.pos[l.b]; if (a && b) { const [ax, ay] = P(a), [bx, by] = P(b); h += `<line x1="${ax}" y1="${ay}" x2="${bx}" y2="${by}" stroke="var(--ink-3)" stroke-width="1.2"/>`; } }
+  for (const x of ps) {
+    const [px, py] = P(x.p), k2 = kindOf(x.it);
+    const col = k2 === 'page' ? 'var(--accent)' : HEX[x.it.color || 'blue'];
+    h += `<rect x="${px - 9}" y="${py - 5}" width="18" height="10" rx="3" fill="var(--surface-2)" stroke="${col}" stroke-width="2"/>`;
   }
-  const books = [...S.books].sort((a, b) => (b.opened || b.added) - (a.opened || a.added));
-  body.innerHTML = `<div class="grid">${books.map(b => {
-    const n = S.hls.filter(h => h.bookId === b.id).length;
-    const prog = b.pos && b.pos.page && b.pages ? Math.round(b.pos.page / b.pages * 100) + '%' : '';
-    return `<div class="card"><button class="cover" data-open="${b.id}" aria-label="${esc(b.title)}">${b.cover ? `<img src="${b.cover}" alt="">` : `<span class="ph">${esc(trunc(b.title, 80))}</span>`}<span class="tag">${b.type.toUpperCase()}</span></button>
-      <button class="more" data-more="${b.id}" aria-label="Opzioni">${ic('more')}</button>
-      <div class="t">${esc(b.title)}</div><div class="m">${[n ? n + ' sottolineature' : 'Nessun appunto', prog].filter(Boolean).join(' · ')}</div></div>`;
-  }).join('')}</div>`;
-  $$('[data-open]', body).forEach(el => el.onclick = () => openBook(el.dataset.open));
-  $$('[data-more]', body).forEach(el => el.onclick = () => bookMenu(el.dataset.more));
+  return `<svg class="prev" viewBox="0 0 100 140">${h}</svg>`;
 }
-function bookMenu(id) {
-  const b = S.books.find(x => x.id === id);
-  const el = openSheet(b.title, `<div class="menu">
+function tileHtml(e) {
+  const o = e.obj;
+  if (e.kind === 'folder') {
+    const n = folderCount(o);
+    return `<div class="card" data-kind="folder" data-id="${o.id}"><button class="cover folder" data-open aria-label="Apri cartella ${esc(o.name)}">${ic('folder')}<span class="cnt">${n} ${n === 1 ? 'elemento' : 'elementi'}</span></button>
+      <button class="more" data-more aria-label="Opzioni">${ic('more')}</button><div class="t">${esc(o.name)}</div><div class="m">Cartella</div></div>`;
+  }
+  if (e.kind === 'map') {
+    const ids = Object.keys(o.pos), books = new Set(ids.map(i => itemById(i)).filter(Boolean).map(i => i.bookId).filter(Boolean));
+    return `<div class="card" data-kind="map" data-id="${o.id}"><button class="cover mapc" data-open aria-label="Apri mappa ${esc(o.name)}">${mapPreview(o)}<span class="tag">MAPPA</span></button>
+      <button class="more" data-more aria-label="Opzioni">${ic('more')}</button><div class="t">${esc(o.name)}</div><div class="m">${ids.length} elementi · ${books.size} ${books.size === 1 ? 'libro' : 'libri'}</div></div>`;
+  }
+  const n = S.hls.filter(h => h.bookId === o.id).length;
+  const prog = o.pos && o.pos.page && o.pages ? Math.round(o.pos.page / o.pages * 100) + '%' : '';
+  return `<div class="card" data-kind="book" data-id="${o.id}"><button class="cover" data-open aria-label="${esc(o.title)}">${o.cover ? `<img src="${o.cover}" alt="">` : `<span class="ph">${esc(trunc(o.title, 80))}</span>`}<span class="tag">${o.type.toUpperCase()}</span></button>
+    <button class="more" data-more aria-label="Opzioni">${ic('more')}</button>
+    <div class="t">${esc(o.title)}</div><div class="m">${[n ? n + ' appunti' : 'Nessun appunto', prog].filter(Boolean).join(' · ')}</div></div>`;
+}
+function renderShelf(body, t) {
+  if (curFolder[t] && !folderById(curFolder[t])) curFolder[t] = null;
+  const parent = curFolder[t];
+  const list = sortedEntries(t, parent);
+  const rootName = t === 'books' ? 'Libreria' : 'Mappe';
+  const crumbs = [{ id: '', name: rootName }, ...folderPath(parent).map(f => ({ id: f.id, name: f.name }))];
+  let h = `<div class="shelfbar"><div class="crumbs">${crumbs.map((c, i) => (i ? `<span class="gt">›</span>` : '') + `<button class="crumb" data-crumb="${c.id}">${esc(c.name)}</button>`).join('')}</div>
+    <button class="btn" id="newFolder">${ic('newfolder')} Cartella</button>${t === 'maps' ? `<button class="btn primary" id="newMap">${ic('plus')} Nuova mappa</button>` : ''}</div>`;
+  if (!list.length) {
+    if (!parent && t === 'books') h += `<div class="empty"><img src="icon-180.png" width="84" height="84" style="border-radius:20px" alt=""><h2>La tua libreria è vuota</h2><p>Importa PDF, EPUB o file ZIP che li contengono. Restano solo su questo dispositivo.</p><button class="btn primary" id="emptyImp">${ic('plus')} Importa libri</button></div>`;
+    else if (!parent) h += `<div class="empty"><h2>Nessuna mappa</h2><p>Una mappa mette insieme sottolineature, pagine e note di libri diversi e le collega tra loro. Tocca un collegamento per saltare alla pagina.</p></div>`;
+    else h += `<div class="empty"><h2>Cartella vuota</h2><p>${t === 'books' ? 'Importa un libro mentre sei qui dentro' : 'Crea una mappa mentre sei qui dentro'}. Per spostare qui qualcosa che hai già: torna indietro, tieni premuto l'elemento e trascinalo su questa cartella, oppure usa ⋯ e poi Sposta in.</p></div>`;
+  } else {
+    if (list.length > 1) h += `<p class="tip">Tieni premuto un elemento e trascinalo per cambiare l'ordine o per metterlo in una cartella.</p>`;
+    h += `<div class="grid">${list.map(tileHtml).join('')}</div>`;
+  }
+  body.innerHTML = h;
+  body.dataset.tab = t;
+  const ei = $('#emptyImp'); if (ei) ei.onclick = () => $('#fileIn').click();
+  $('#newFolder').onclick = () => newFolder(t);
+  const nm = $('#newMap'); if (nm) nm.onclick = async () => { const m = await newMap(); if (m) openMap(m.id); };
+}
+function openEntry(e) {
+  if (e.kind === 'folder') { curFolder[e.obj.tab] = e.obj.id; renderLib(); $('#libScroll').scrollTop = 0; }
+  else if (e.kind === 'book') openBook(e.obj.id);
+  else openMap(e.obj.id);
+}
+function entryMenu(e) {
+  const o = e.obj, name = e.kind === 'book' ? o.title : o.name;
+  const what = { book: 'libro', map: 'mappa', folder: 'cartella' }[e.kind];
+  const del = {
+    book: 'Elimina anche sottolineature e pagine segnate di questo libro',
+    map: 'Le sottolineature restano nei libri',
+    folder: 'Quello che contiene non viene eliminato: torna fuori dalla cartella'
+  }[e.kind];
+  const el = openSheet(name, `<div class="menu">
     <button class="mi" data-a="ren">${ic('edit')}<span>Rinomina</span></button>
-    <button class="mi" data-a="del" style="color:var(--danger)">${ic('trash')}<span>Elimina libro<small>Elimina anche sottolineature e pagine segnate di questo libro</small></span></button></div>`);
+    <button class="mi" data-a="mov">${ic('move')}<span>Sposta in…<small>Scegli una cartella</small></span></button>
+    <button class="mi" data-a="del" style="color:var(--danger)">${ic('trash')}<span>Elimina ${what}<small>${del}</small></span></button></div>`);
   el.querySelector('[data-a=ren]').onclick = async () => {
-    closeSheet(); const t = await askText('Rinomina libro', b.title);
-    if (t) { b.title = t; await save('books', b); renderLib(); }
+    closeSheet(); const t = await askText('Rinomina ' + what, name);
+    if (!t) return;
+    if (e.kind === 'book') o.title = t; else o.name = t;
+    await save(kindStore[e.kind], o); renderLib();
   };
+  el.querySelector('[data-a=mov]').onclick = () => { closeSheet(); moveMenu(e); };
   el.querySelector('[data-a=del]').onclick = async () => {
     closeSheet();
-    if (!await askConfirm('Eliminare il libro?', `«${b.title}» e tutti i suoi appunti verranno eliminati da questo dispositivo.`)) return;
-    for (const it of [...S.hls, ...S.nodes].filter(x => x.bookId === id)) await deleteItem(it.id);
-    await dbDel('files', id); await remove('books', id); renderLib(); toast('Libro eliminato');
+    if (e.kind === 'book') {
+      if (!await askConfirm('Eliminare il libro?', `«${o.title}» e tutti i suoi appunti verranno eliminati da questo dispositivo.`)) return;
+      for (const it of [...S.hls, ...S.nodes].filter(x => x.bookId === o.id)) await deleteItem(it.id);
+      await dbDel('files', o.id); await remove('books', o.id); toast('Libro eliminato');
+    } else if (e.kind === 'map') {
+      if (!await askConfirm('Eliminare la mappa?', `«${o.name}» verrà eliminata. Le note libere presenti solo qui verranno eliminate.`)) return;
+      for (const id of Object.keys(o.pos)) { const it = itemById(id); if (it && kindOf(it) === 'text' && !S.maps.some(x => x !== o && x.pos[id])) await deleteItem(id); }
+      await remove('maps', o.id);
+    } else {
+      if (!await askConfirm('Eliminare la cartella?', `«${o.name}» verrà eliminata. Il contenuto torna nella cartella che la contiene.`, 'Elimina cartella')) return;
+      for (const c of sortedEntries(o.tab, o.id)) await moveEntry(c, o.parent || null, o.tab);
+      await remove('folders', o.id);
+    }
+    renderLib();
   };
 }
+function moveMenu(e) {
+  const t = e.kind === 'book' ? 'books' : e.kind === 'map' ? 'maps' : e.obj.tab;
+  const cur = (e.kind === 'folder' ? e.obj.parent : e.obj.folder) || null;
+  const rows = [];
+  const walk = (parent, depth) => {
+    for (const f of sortedEntries(t, parent).filter(x => x.kind === 'folder').map(x => x.obj)) {
+      if (e.kind === 'folder' && f.id === e.obj.id) continue;
+      rows.push({ id: f.id, name: f.name, depth });
+      walk(f.id, depth + 1);
+    }
+  };
+  walk(null, 1);
+  const el = openSheet('Sposta in…', `<div class="menu">
+    <button class="mi" data-f="">${ic(t === 'books' ? 'list' : 'map')}<span>${t === 'books' ? 'Libreria' : 'Mappe'}<small>Fuori da ogni cartella${cur === null ? ' · qui adesso' : ''}</small></span></button>
+    ${rows.map(r => `<button class="mi" data-f="${r.id}" style="padding-left:${4 + r.depth * 18}px">${ic('folder')}<span>${esc(r.name)}${cur === r.id ? '<small>qui adesso</small>' : ''}</span></button>`).join('')}
+    <button class="mi" data-new style="color:var(--accent)">${ic('newfolder')}<span>Nuova cartella qui</span></button></div>`);
+  $$('[data-f]', el).forEach(b => b.onclick = async () => {
+    closeSheet();
+    if (await moveEntry(e, b.dataset.f || null, t)) { renderLib(); toast('Spostato'); }
+  });
+  $('[data-new]', el).onclick = async () => {
+    closeSheet();
+    const name = await askText('Nuova cartella', '', { ok: 'Crea e sposta' });
+    if (!name) return;
+    const f = { id: uid(), name, tab: t, parent: curFolder[t], order: topOrder(t, curFolder[t]), created: Date.now() };
+    await save('folders', f);
+    await moveEntry(e, f.id, t); renderLib(); toast(`Spostato in «${name}»`);
+  };
+}
+
+/* trascinamento: tieni premuto, poi trascina */
+(() => {
+  const body = $('#libBody'), sc = $('#libScroll');
+  const clearMarks = () => $$('.ins-before,.ins-after,.drop-into', body).forEach(x => x.classList.remove('ins-before', 'ins-after', 'drop-into'));
+  body.addEventListener('click', e => {
+    if (DnD.suppress) { DnD.suppress = false; e.stopPropagation(); e.preventDefault(); return; }
+    const crumb = e.target.closest('[data-crumb]');
+    if (crumb) { curFolder[body.dataset.tab] = crumb.dataset.crumb || null; renderLib(); return; }
+    const card = e.target.closest('.card[data-kind]'); if (!card) return;
+    const en = entryOf(card.dataset.kind, card.dataset.id); if (!en) return;
+    if (e.target.closest('[data-more]')) entryMenu(en);
+    else if (e.target.closest('[data-open]')) openEntry(en);
+  }, true);
+  body.addEventListener('pointerdown', e => {
+    if (e.button > 0 || tab === 'notes') return;
+    const card = e.target.closest('.card[data-kind]');
+    if (!card || e.target.closest('[data-more]')) return;
+    DnD.start = { x: e.clientX, y: e.clientY, card, id: e.pointerId };
+    clearTimeout(DnD.timer);
+    DnD.timer = setTimeout(() => beginDrag(e.clientX, e.clientY), 380);
+  });
+  function beginDrag() {
+    const s = DnD.start; if (!s) return;
+    const r = s.card.getBoundingClientRect();
+    const g = s.card.cloneNode(true);
+    g.classList.add('ghost'); g.style.width = r.width + 'px'; g.style.left = r.left + 'px'; g.style.top = r.top + 'px';
+    document.body.appendChild(g);
+    s.card.classList.add('lifting');
+    DnD.drag = { card: s.card, ghost: g, dx: s.x - r.left, dy: s.y - r.top, moved: false, target: null };
+    try { getSelection().removeAllRanges(); } catch {}
+  }
+  function onMove(x, y) {
+    const d = DnD.drag;
+    if (!d) {
+      if (DnD.start && Math.hypot(x - DnD.start.x, y - DnD.start.y) > 8) { clearTimeout(DnD.timer); DnD.start = null; }
+      return;
+    }
+    if (Math.hypot(x - DnD.start.x, y - DnD.start.y) > 6) d.moved = true;
+    d.ghost.style.left = (x - d.dx) + 'px'; d.ghost.style.top = (y - d.dy) + 'px';
+    const sr = sc.getBoundingClientRect();
+    if (y < sr.top + 70) sc.scrollTop -= 14; else if (y > sr.bottom - 70) sc.scrollTop += 14;
+    clearMarks(); d.target = null;
+    const el = document.elementFromPoint(x, y); if (!el) return;
+    const crumb = el.closest('[data-crumb]');
+    const cur = curFolder[body.dataset.tab] || '';
+    if (crumb && crumb.dataset.crumb !== cur) { crumb.classList.add('drop-into'); d.target = { mode: 'into', folder: crumb.dataset.crumb || null }; return; }
+    const tc = el.closest('.card[data-kind]');
+    if (!tc || tc === d.card) return;
+    const r = tc.getBoundingClientRect();
+    const fx = (x - r.left) / r.width, fy = (y - r.top) / r.height;
+    if (tc.dataset.kind === 'folder' && fx > .2 && fx < .8 && fy < .8) {
+      tc.classList.add('drop-into'); d.target = { mode: 'into', folder: tc.dataset.id };
+    } else {
+      const after = fx > .5;
+      tc.classList.add(after ? 'ins-after' : 'ins-before');
+      d.target = { mode: after ? 'after' : 'before', id: tc.dataset.id, kind: tc.dataset.kind };
+    }
+  }
+  async function end(cancel) {
+    clearTimeout(DnD.timer);
+    const d = DnD.drag, s = DnD.start;
+    DnD.drag = null; DnD.start = null;
+    if (!d) return;
+    d.ghost.remove(); d.card.classList.remove('lifting'); clearMarks();
+    DnD.suppress = true; setTimeout(() => DnD.suppress = false, 400);
+    const t = body.dataset.tab;
+    const me = entryOf(d.card.dataset.kind, d.card.dataset.id); if (!me) return;
+    if (!d.moved && !cancel) { entryMenu(me); return; }
+    if (cancel || !d.target) return;
+    if (d.target.mode === 'into') { if (await moveEntry(me, d.target.folder, t)) toast('Spostato'); renderLib(); return; }
+    const list = sortedEntries(t, curFolder[t]).filter(x => x.obj.id !== me.obj.id);
+    let i = list.findIndex(x => x.obj.id === d.target.id);
+    if (i < 0) return;
+    if (d.target.mode === 'after') i++;
+    list.splice(i, 0, me);
+    await writeOrder(list); renderLib();
+  }
+  addEventListener('pointermove', e => { if (DnD.start) onMove(e.clientX, e.clientY); });
+  addEventListener('pointerup', () => end(false));
+  addEventListener('pointercancel', () => end(!DnD.drag || !DnD.drag.moved));
+  // su iPad: blocca lo scorrimento mentre trascini
+  sc.addEventListener('touchmove', e => { if (DnD.drag) e.preventDefault(); }, { passive: false });
+  body.addEventListener('contextmenu', e => { if (e.target.closest('.card')) e.preventDefault(); });
+})();
+
 function allItems() { return [...S.hls, ...S.nodes]; }
 function matchQ(it, q) {
   if (!q) return true;
@@ -627,36 +887,15 @@ function renderNotes(body) {
   inp.oninput = () => { noteQuery = inp.value; const p = inp.selectionStart; renderNotes(body); const n = $('#nq'); n.focus(); n.setSelectionRange(p, p); };
   $$('[data-item]', body).forEach(el => el.onclick = () => openItem(el.dataset.item));
 }
-function renderMaps(body) {
-  const maps = [...S.maps].sort((a, b) => (b.updated || 0) - (a.updated || 0));
-  body.innerHTML = `<div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn primary" id="newMap">${ic('plus')} Nuova mappa</button></div>` +
-    (maps.length ? `<div class="list">${maps.map(m => {
-      const ids = Object.keys(m.pos); const books = new Set(ids.map(i => itemById(i)).filter(Boolean).map(i => i.bookId).filter(Boolean));
-      return `<div class="row" style="align-items:center"><button style="display:flex;gap:12px;align-items:center;flex:1;text-align:left;min-width:0" data-map="${m.id}">${ic('map')}<span class="body"><div style="font-weight:600">${esc(m.name)}</div><div class="s">${ids.length} elementi · ${books.size} ${books.size === 1 ? 'libro' : 'libri'}</div></span></button><button class="ib" data-mm="${m.id}" aria-label="Opzioni">${ic('more')}</button></div>`;
-    }).join('')}</div>`
-      : `<div class="empty"><h2>Nessuna mappa</h2><p>Una mappa mette insieme sottolineature, pagine e note di libri diversi e le collega tra loro. Tocca un collegamento per saltare alla pagina.</p></div>`);
-  $('#newMap').onclick = async () => { const m = await newMap(); if (m) openMap(m.id); };
-  $$('[data-map]', body).forEach(el => el.onclick = () => openMap(el.dataset.map));
-  $$('[data-mm]', body).forEach(el => el.onclick = () => {
-    const m = S.maps.find(x => x.id === el.dataset.mm);
-    const s = openSheet(m.name, `<div class="menu"><button class="mi" data-a="ren">${ic('edit')}<span>Rinomina</span></button><button class="mi" data-a="del" style="color:var(--danger)">${ic('trash')}<span>Elimina mappa<small>Le sottolineature restano nei libri</small></span></button></div>`);
-    s.querySelector('[data-a=ren]').onclick = async () => { closeSheet(); const t = await askText('Rinomina mappa', m.name); if (t) { m.name = t; await save('maps', m); renderLib(); } };
-    s.querySelector('[data-a=del]').onclick = async () => {
-      closeSheet(); if (!await askConfirm('Eliminare la mappa?', `«${m.name}» verrà eliminata. Le note libere presenti solo qui verranno eliminate.`)) return;
-      for (const id of Object.keys(m.pos)) { const it = itemById(id); if (it && kindOf(it) === 'text' && !S.maps.some(o => o !== m && o.pos[id])) await deleteItem(id); }
-      await remove('maps', m.id); renderLib();
-    };
-  });
-}
 async function newMap() {
   const name = await askText('Nuova mappa', '', { ok: 'Crea', placeholder: 'Es. Diritto privato, esame di giugno' });
   if (!name) return null;
-  const m = { id: uid(), name, pos: {}, view: null, created: Date.now(), updated: Date.now() };
+  const m = { id: uid(), name, pos: {}, view: null, created: Date.now(), updated: Date.now(), folder: curFolder.maps, order: topOrder('maps', curFolder.maps) };
   await save('maps', m); return m;
 }
 
 /* ---------- lettore ---------- */
-const R = { book: null, kind: null, pdf: null, base: null, scale: 1, pages: [], obs: null, gen: 0, rendition: null, epub: null, pending: null, cur: 1, loc: null, toc: [], flash: null };
+const R = { style: (() => { try { return localStorage.getItem('mg-style') || 'hl'; } catch { return 'hl'; } })(), lastColor: null, book: null, kind: null, pdf: null, base: null, scale: 1, pages: [], obs: null, gen: 0, rendition: null, epub: null, pending: null, cur: 1, loc: null, toc: [], flash: null };
 const saveBookPos = debounce(() => R.book && save('books', R.book), 700);
 
 async function openBook(bookId, item, push = true) {
@@ -756,7 +995,9 @@ function drawPageHls(n) {
   for (const it of S.hls) {
     if (it.bookId !== R.book.id || !it.loc.rects) continue;
     for (const r of it.loc.rects) if (r.p === n)
-      h += `<div class="hl${R.flash === it.id ? ' flash' : ''}" data-id="${it.id}" style="left:${r.x * 100}%;top:${r.y * 100}%;width:${r.w * 100}%;height:${r.h * 100}%;background:${HEX[it.color]}"></div>`;
+      h += it.style === 'ul'
+        ? `<div class="ul${R.flash === it.id ? ' flash' : ''}" data-id="${it.id}" style="left:${r.x * 100}%;top:calc(${(r.y + r.h) * 100}% - 2px);width:${r.w * 100}%;background:${HEX[it.color]}"></div>`
+        : `<div class="hl${R.flash === it.id ? ' flash' : ''}" data-id="${it.id}" style="left:${r.x * 100}%;top:${r.y * 100}%;width:${r.w * 100}%;height:${r.h * 100}%;background:${HEX[it.color]}"></div>`;
   }
   for (const nd of S.nodes) if (nd.bookId === R.book.id && nd.kind === 'page' && nd.loc.page === n)
     h += `<div class="mark" style="top:${Math.max(0, (nd.loc.y || 0) * 100)}%"></div>`;
@@ -914,16 +1155,16 @@ function applyEpubTheme() {
 function addEpubMark(h) {
   if (!R.rendition || !h.loc.cfi) return;
   try {
-    R.rendition.annotations.add('highlight', h.loc.cfi, { id: h.id }, () => openItemSheet(h.id), 'mg-hl', { 'fill': HEX[h.color], 'fill-opacity': '0.4', 'mix-blend-mode': 'multiply' });
+    if (h.style === 'ul') R.rendition.annotations.add('underline', h.loc.cfi, { id: h.id }, () => openItemSheet(h.id), 'mg-ul', { 'stroke': HEX[h.color], 'stroke-opacity': '1', 'stroke-width': '2.5' });
+    else R.rendition.annotations.add('highlight', h.loc.cfi, { id: h.id }, () => openItemSheet(h.id), 'mg-hl', { 'fill': HEX[h.color], 'fill-opacity': '0.4', 'mix-blend-mode': 'multiply' });
   } catch (e) { console.warn(e); }
 }
-function removeEpubMark(h) { try { R.rendition && R.rendition.annotations.remove(h.loc.cfi, 'highlight'); } catch {} }
+function removeEpubMark(h) { for (const t of ['highlight', 'underline']) { try { R.rendition && R.rendition.annotations.remove(h.loc.cfi, t); } catch {} } }
 
 /* --- barra di selezione --- */
 function showSelBar(r) {
   const bar = $('#selBar');
-  bar.innerHTML = COLOR_KEYS.map(c => `<button class="dot" data-c="${c}" style="background:${HEX[c]}" aria-label="Sottolinea"></button>`).join('') +
-    `<span class="sep"></span><button class="tb" data-note>${ic('note')} Nota</button>`;
+  drawSelBar();
   bar.hidden = false;
   const bw = bar.offsetWidth, bh = bar.offsetHeight;
   let x = innerWidth / 2 - bw / 2, y = innerHeight - bh - 90;
@@ -934,15 +1175,26 @@ function showSelBar(r) {
   }
   bar.style.left = x + 'px'; bar.style.top = y + 'px';
 }
+function drawSelBar() {
+  const ul = R.style === 'ul';
+  $('#selBar').innerHTML = COLOR_KEYS.map(c => `<button class="dot${ul ? ' u' : ''}" data-c="${c}" style="--c:${HEX[c]}" aria-label="${ul ? 'Sottolinea' : 'Evidenzia'}"></button>`).join('') +
+    `<span class="sep"></span><button class="tb" data-mode aria-label="Cambia tra evidenzia e sottolinea">${ic(ul ? 'under' : 'marker')} ${ul ? 'Sottolinea' : 'Evidenzia'}</button><button class="tb" data-note>${ic('note')} Nota</button>`;
+}
 function hideSelBar() { $('#selBar').hidden = true; R.pending = null; }
 $('#selBar').addEventListener('pointerdown', e => {
   const b = e.target.closest('button'); if (!b) return;
   e.preventDefault();
-  makeHl(b.dataset.c || 'yellow', b.hasAttribute('data-note'));
+  if (b.hasAttribute('data-mode')) {
+    R.style = R.style === 'ul' ? 'hl' : 'ul';
+    try { localStorage.setItem('mg-style', R.style); } catch {}
+    drawSelBar(); return;
+  }
+  makeHl(b.dataset.c || R.lastColor || 'yellow', b.hasAttribute('data-note'));
 });
 async function makeHl(color, withNote) {
   const P = R.pending; if (!P || !R.book) return;
-  const hl = { id: uid(), bookId: R.book.id, color, text: P.text.slice(0, 5000), note: '', created: Date.now(),
+  R.lastColor = color;
+  const hl = { id: uid(), bookId: R.book.id, color, style: R.style === 'ul' ? 'ul' : 'hl', text: P.text.slice(0, 5000), note: '', created: Date.now(),
     loc: P.kind === 'pdf' ? { page: P.page, rects: P.rects } : { cfi: P.cfi, label: R.loc ? chapterLabel(R.loc.start.href) : '' } };
   await save('hls', hl);
   try { (P.kind === 'pdf' ? window : P.contents.window).getSelection().removeAllRanges(); } catch {}
@@ -1002,7 +1254,8 @@ function openItemSheet(id, focusNote) {
       <button class="btn" data-go="${o.id}">${ic('open')} Vai</button><button class="ib" data-ll="${l.id}" aria-label="Etichetta">${ic('edit')}</button><button class="ib" data-ul="${l.id}" aria-label="Scollega">${ic('x')}</button></div>`;
   }).join('');
   const el = openSheet(title, `
-    ${k === 'hl' ? `<div class="quote" style="border-color:${HEX[it.color]}">${esc(it.text)}</div><div class="colors">${COLOR_KEYS.map(c => `<button class="dot${c === it.color ? ' on' : ''}" data-col="${c}" style="background:${HEX[c]}" aria-label="Colore"></button>`).join('')}</div>` : ''}
+    ${k === 'hl' ? `<div class="quote" style="border-color:${HEX[it.color]}">${esc(it.text)}</div><div class="colors">${COLOR_KEYS.map(c => `<button class="dot${c === it.color ? ' on' : ''}" data-col="${c}" style="--c:${HEX[c]}" aria-label="Colore"></button>`).join('')}</div>
+    <div class="seg" style="display:inline-flex;margin-top:12px"><button data-sty="hl" class="${it.style !== 'ul' ? 'on' : ''}">${ic('marker')} Evidenzia</button><button data-sty="ul" class="${it.style === 'ul' ? 'on' : ''}">${ic('under')} Sottolinea</button></div>` : ''}
     ${k === 'page' ? `<input class="txt" id="itTitle" value="${esc(it.text)}" placeholder="Titolo della pagina">` : ''}
     ${k === 'text' ? '' : `<p class="muted" style="margin:10px 0 0">${esc(itemSrc(it))}</p>`}
     <div class="lbl">${k === 'text' ? 'Testo' : 'Nota'}</div>
@@ -1024,6 +1277,12 @@ function openItemSheet(id, focusNote) {
     it.color = b.dataset.col; await save('hls', it);
     $$('[data-col]', el).forEach(x => x.classList.toggle('on', x === b));
     $('.quote', el).style.borderColor = HEX[it.color];
+    if (R.book && R.book.id === it.bookId) { if (R.kind === 'pdf') new Set(it.loc.rects.map(r => r.p)).forEach(drawPageHls); else addEpubMark(it); }
+  });
+  $$('[data-sty]', el).forEach(b => b.onclick = async () => {
+    if (R.kind === 'epub') removeEpubMark(it);
+    it.style = b.dataset.sty; await save('hls', it);
+    $$('[data-sty]', el).forEach(x => x.classList.toggle('on', x === b));
     if (R.book && R.book.id === it.bookId) { if (R.kind === 'pdf') new Set(it.loc.rects.map(r => r.p)).forEach(drawPageHls); else addEpubMark(it); }
   });
   $$('[data-go]', el).forEach(b => b.onclick = () => { closeSheet(); openItem(b.dataset.go); });
