@@ -327,6 +327,7 @@ textarea.note:focus,input.txt:focus{border-color:var(--accent)}
 'use strict';
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'vendor/pdf.worker.min.js';
 
+const APP_VERSION = '1.5';
 /* ---------- utilità ---------- */
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -601,7 +602,8 @@ async function openMenu() {
     </div>
     <div class="lbl">Privacy</div>
     <p class="muted" style="margin:0">${ic('shield')} Tutto resta su questo dispositivo: nessun account, nessun server. Spazio usato: ${used || 'n.d.'}. Memoria ${persisted ? 'protetta dalla pulizia automatica' : 'non ancora protetta: si attiva dopo il primo import'}.</p>
-    <p class="muted">Se elimini l'app dalla schermata Home perdi i dati: fai un backup ogni tanto.</p>`);
+    <p class="muted">Se elimini l'app dalla schermata Home perdi i dati: fai un backup ogni tanto.</p>
+    <p class="muted" style="text-align:right;margin-bottom:0">Versione ${APP_VERSION}</p>`);
   el.querySelector('[data-a=all]').onclick = () => exportBackup(true);
   el.querySelector('[data-a=notes]').onclick = () => exportBackup(false);
   el.querySelector('[data-a=imp]').onclick = () => { closeSheet(); $('#fileIn').click(); };

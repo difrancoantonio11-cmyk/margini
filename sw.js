@@ -1,6 +1,6 @@
 // Margini: tiene in cache il programma per funzionare offline.
 // Libri e appunti NON passano di qui: stanno in IndexedDB sul dispositivo.
-const V = 'margini-v4';
+const V = 'margini-v5';
 const ASSETS = [
   './', 'index.html', 'manifest.webmanifest',
   'icon-180.png', 'icon-192.png', 'icon-512.png',
@@ -27,7 +27,7 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
   if (req.mode === 'navigate') {
     e.respondWith(
-      fetch(req).then(res => {
+      fetch(req, { cache: 'no-cache' }).then(res => {
         if (res.ok) { const copy = res.clone(); caches.open(V).then(c => c.put('index.html', copy)); }
         return res;
       }).catch(() => caches.match('index.html'))
