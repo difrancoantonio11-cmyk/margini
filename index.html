@@ -1671,7 +1671,7 @@ function drawInkBar() {
       cols.map(c => `<button class="dot sm${c === curC ? ' on' : ''}" data-ic="${c}" style="--c:${c}" aria-label="Colore"></button>`).join('') + '<span class="sep"></span>' +
       PEN_SIZES[mk ? 'mk' : 'pen'].map((s, i) => `<button class="tl sz${i === curS ? ' on' : ''}" data-is="${i}" aria-label="Spessore"><i style="width:${Math.min(22, 4 + s * (mk ? .7 : 2))}px;height:${Math.min(22, 4 + s * (mk ? .7 : 2))}px;background:${curC}"></i></button>`).join('')) +
     `<span class="sep"></span><button class="tl" data-ia="undo" aria-label="Annulla">${ic('undo')}</button>` +
-    `<button class="tl wide${INK.penOnly ? ' on' : ''}" data-ia="only" aria-pressed="${INK.penOnly}">${INK.penOnly ? 'Dito scorre' : 'Dito scrive'}</button>` +
+    `<button class="tl wide${INK.penOnly ? ' on' : ''}" data-ia="only" aria-pressed="${INK.penOnly}">${INK.penOnly ? 'Scorri' : 'Scrivi'}</button>` +
     `<button class="tl wide acc" data-ia="done">Fine</button>`;
 }
 $('#inkBar').addEventListener('click', e => {
