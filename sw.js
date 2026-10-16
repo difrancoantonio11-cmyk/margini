@@ -1,6 +1,6 @@
 // Margini: tiene in cache il programma per funzionare offline.
 // Libri e appunti NON passano di qui: stanno in IndexedDB sul dispositivo.
-const V = 'margini-v8';
+const V = 'margini-v9';
 const ASSETS = [
   './', 'index.html', 'manifest.webmanifest',
   'icon-180.png', 'icon-192.png', 'icon-512.png',

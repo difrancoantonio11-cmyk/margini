@@ -341,7 +341,7 @@ textarea.note:focus,input.txt:focus{border-color:var(--accent)}
 'use strict';
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'vendor/pdf.worker.min.js';
 
-const APP_VERSION = '1.8';
+const APP_VERSION = '1.9';
 /* ---------- utilità ---------- */
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -1038,7 +1038,10 @@ async function renderPage(n) {
   const tc = await page.getTextContent();
   if (gen !== R.gen || !P.on) return;
   if (!tc.items.some(i => i.str && i.str.trim())) { scannedPage(n, tl, vp); return; }
-  pdfjsLib.renderTextLayer({ textContentSource: tc, container: tl, viewport: vp, textDivs: [] });
+  const tlTask = pdfjsLib.renderTextLayer({ textContentSource: tc, container: tl, viewport: vp, textDivs: [] });
+  try { await tlTask.promise; } catch { return; }
+  if (gen !== R.gen || !P.on) return;
+  orderTextLayer(tl);
   addEndOfContent(tl);
 }
 function unrenderPage(n) {
@@ -1117,6 +1120,42 @@ function setZoom(z) {
 })();
 
 // selezione testo nel PDF
+// Nel file del PDF i pezzi di testo possono stare in un ordine diverso da quello della pagina
+// (capolettere, titoli, riquadri). La selezione segue l'ordine del file, quindi li rimetto
+// in ordine di lettura: per colonne, poi dall'alto in basso, poi da sinistra a destra.
+function orderTextLayer(tl) {
+  const spans = [...tl.querySelectorAll('span')].filter(x => x.textContent.length);
+  if (spans.length < 2) return;
+  const base = tl.getBoundingClientRect();
+  if (!base.width) return;
+  const it = spans.map((el, i) => { const r = el.getBoundingClientRect(); return { el, i, l: r.left - base.left, r: r.right - base.left, t: r.top - base.top, h: r.height }; });
+  const W = base.width, mid = W / 2;
+  const hs = it.map(x => x.h).sort((a, b) => a - b), mh = hs[hs.length >> 1] || 10;
+  // due colonne: molti pezzi tutti a sinistra del centro, molti tutti a destra, quasi nessuno a cavallo
+  const left = it.filter(x => x.r < mid + W * .02).length, right = it.filter(x => x.l > mid - W * .02).length;
+  const across = it.filter(x => x.l < mid - W * .05 && x.r > mid + W * .05 && x.h < mh * 1.6).length;
+  const twoCols = left > it.length * .25 && right > it.length * .25 && across < it.length * .08;
+  const col = x => twoCols ? (x.l > mid - W * .02 ? 1 : 0) : 0;
+  it.sort((a, b) => col(a) - col(b) || a.t - b.t || a.l - b.l);
+  // righe: pezzi che partono quasi alla stessa altezza
+  const lines = [];
+  for (const x of it) {
+    const L = lines[lines.length - 1];
+    if (L && L.c === col(x) && Math.abs(x.t - L.t) < mh * .5) L.items.push(x);
+    else lines.push({ c: col(x), t: x.t, items: [x] });
+  }
+  const order = [];
+  for (const L of lines) { L.items.sort((a, b) => a.l - b.l); order.push(...L.items); }
+  if (order.every((x, k) => k === 0 || x.i > order[k - 1].i)) return;
+  const frag = document.createDocumentFragment();
+  for (const L of lines) {
+    L.items.sort((a, b) => a.l - b.l);
+    for (const x of L.items) frag.appendChild(x.el);
+    frag.appendChild(document.createElement('br'));
+  }
+  tl.querySelectorAll('br').forEach(b => b.remove());
+  tl.prepend(frag);
+}
 // Come pdf.js: un foglio invisibile segue la fine della selezione, così il dito
 // sugli spazi vuoti non fa saltare la selezione su un altro blocco di testo.
 const textLayers = new Map();
@@ -2086,7 +2125,12 @@ addEventListener('drop', e => {
       reg.addEventListener('updatefound', () => {
         const w = reg.installing; if (!w) return;
         w.addEventListener('statechange', () => {
-          if (w.state === 'activated' && navigator.serviceWorker.controller) toast('Nuova versione di Margini pronta', 'Aggiorna', reloadApp, 0);
+          if (w.state !== 'activated' || !navigator.serviceWorker.controller) return;
+          // avviso solo se la pagina sul server è davvero più nuova di quella aperta
+          fetch('./?v=' + Date.now(), { cache: 'no-store' }).then(r => r.text()).then(h => {
+            const m = h.match(/APP_VERSION = '([^']+)'/);
+            if (m && m[1] !== APP_VERSION) toast('Nuova versione di Margini pronta', 'Aggiorna', reloadApp, 0);
+          }).catch(() => {});
         });
       });
       document.addEventListener('visibilitychange', () => { if (!document.hidden) reg.update().catch(() => {}); });
