@@ -248,6 +248,7 @@ textarea.note:focus,input.txt:focus{border-color:var(--accent)}
     </div>
     <span class="spacer"></span>
     <button class="btn primary" id="btnImport"><svg class="i"><use href="#i-plus"/></svg><span>Importa</span></button>
+    <button class="ib" data-reload aria-label="Ricarica e aggiorna"><svg class="i"><use href="#i-refresh"/></svg></button>
     <button class="ib" id="btnMenu" aria-label="Backup e impostazioni"><svg class="i"><use href="#i-more"/></svg></button>
   </header>
   <div class="scroll" id="libScroll"><div class="pad" id="libBody"></div></div>
@@ -263,6 +264,7 @@ textarea.note:focus,input.txt:focus{border-color:var(--accent)}
     <button class="ib" id="zIn" aria-label="Ingrandisci"><svg class="i"><use href="#i-plus"/></svg></button>
     <button class="ib" id="btnPen" aria-label="Scrivi a mano"><svg class="i"><use href="#i-pen"/></svg></button>
     <button class="ib" id="btnMark" aria-label="Segna questa pagina"><svg class="i"><use href="#i-mark"/></svg></button>
+    <button class="ib" data-reload aria-label="Ricarica e aggiorna"><svg class="i"><use href="#i-refresh"/></svg></button>
     <button class="ib" id="btnSide" aria-label="Appunti del libro"><svg class="i"><use href="#i-list"/></svg></button>
   </header>
   <div id="readWrap">
@@ -326,6 +328,7 @@ textarea.note:focus,input.txt:focus{border-color:var(--accent)}
     <symbol id="i-eraser" viewBox="0 0 24 24"><path d="M8 20h12M5.5 14.5l8.8-8.8a2 2 0 0 1 2.8 0l2.2 2.2a2 2 0 0 1 0 2.8L12 18H8.5z"/></symbol>
     <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3"/></symbol>
     <symbol id="i-scan" viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M8 10h8M8 14h5"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 5v6h-6"/></symbol>
     <symbol id="i-expand" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/></symbol>
   </defs>
 </svg>
@@ -338,7 +341,7 @@ textarea.note:focus,input.txt:focus{border-color:var(--accent)}
 'use strict';
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'vendor/pdf.worker.min.js';
 
-const APP_VERSION = '1.7';
+const APP_VERSION = '1.8';
 /* ---------- utilità ---------- */
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -475,6 +478,8 @@ function go(v, push = true) {
   if (v === 'lib') renderLib();
 }
 function goBack() {
+  if (sheetClose) closeSheet();
+  try { getSelection().removeAllRanges(); } catch {}
   const p = back.pop() || { v: 'lib' };
   if (p.v === 'read' && S.books.some(b => b.id === p.id)) openBook(p.id, null, false);
   else if (p.v === 'map' && S.maps.some(m => m.id === p.id)) openMap(p.id, null, false);
@@ -934,27 +939,32 @@ async function newMap() {
 }
 
 /* ---------- lettore ---------- */
-const R = { style: (() => { try { return localStorage.getItem('mg-style') || 'hl'; } catch { return 'hl'; } })(), lastColor: null, book: null, kind: null, pdf: null, base: null, scale: 1, pages: [], obs: null, gen: 0, rendition: null, epub: null, pending: null, cur: 1, loc: null, toc: [], flash: null };
+const R = { style: (() => { try { return localStorage.getItem('mg-style') || 'hl'; } catch { return 'hl'; } })(), lastColor: null, book: null, kind: null, pdf: null, base: null, scale: 1, pages: [], obs: null, gen: 0, rendition: null, epub: null, pending: null, cur: 1, loc: null, toc: [], flash: null, seq: 0 };
 const saveBookPos = debounce(() => R.book && save('books', R.book), 700);
 
 async function openBook(bookId, item, push = true) {
   const book = S.books.find(b => b.id === bookId); if (!book) return toast('Libro non trovato');
-  const file = await dbGet('files', bookId); if (!file) return toast('File del libro mancante');
   if (view === 'read') { if (push) { back.push(here()); } closeReader(); }
   go('read', push);
+  const seq = ++R.seq;
   R.book = book; book.opened = Date.now(); save('books', book);
   $('#readTitle').textContent = book.title;
-  $('#pageInfo').textContent = '';
+  $('#pageInfo').textContent = 'Apro…';
   $('#zOut').hidden = $('#zIn').hidden = false;
   try {
-    if (book.type === 'pdf') await openPdf(file.blob, item);
-    else await openEpub(file.blob, item);
-  } catch (e) { console.error(e); toast('Impossibile aprire questo file'); }
-  if (!$('#side').hidden) renderSide();
+    const file = await dbGet('files', bookId);
+    if (seq !== R.seq) return;
+    if (!file) { toast('File del libro mancante'); return; }
+    if (book.type === 'pdf') await openPdf(file.blob, item, seq);
+    else await openEpub(file.blob, item, seq);
+  } catch (e) { if (seq === R.seq) { console.error(e); toast('Impossibile aprire questo file'); } }
+  if (seq === R.seq && !$('#side').hidden) renderSide();
 }
 function closeReader() {
-  R.gen++;
+  R.gen++; R.seq++;
   if (R.obs) R.obs.disconnect();
+  // libera subito la memoria delle pagine disegnate: su iPad il limite è basso
+  for (const P of R.pages) if (P && P.el) P.el.querySelectorAll('canvas').forEach(c => { c.width = c.height = 0; });
   if (R.pdf) { try { R.pdf.destroy(); } catch {} }
   if (R.rendition) { try { R.rendition.destroy(); } catch {} }
   if (R.epub) { try { R.epub.destroy(); } catch {} }
@@ -966,12 +976,17 @@ function closeReader() {
 }
 
 /* --- PDF --- */
-async function openPdf(blob, item) {
+async function openPdf(blob, item, seq) {
   R.kind = 'pdf';
   $('#epubBox').hidden = true; $('#pdfScroll').hidden = false;
-  R.pdf = await pdfjsLib.getDocument({ data: new Uint8Array(await blob.arrayBuffer()) }).promise;
+  const data = new Uint8Array(await blob.arrayBuffer());
+  if (seq !== R.seq) return;
+  const doc = await pdfjsLib.getDocument({ data }).promise;
+  if (seq !== R.seq) { doc.destroy(); return; }
+  R.pdf = doc;
   if (R.book.pages !== R.pdf.numPages) { R.book.pages = R.pdf.numPages; save('books', R.book); }
   const p1 = await R.pdf.getPage(1);
+  if (seq !== R.seq) return;
   R.base = p1.getViewport({ scale: 1 });
   layoutPdf();
   if (item) jumpTo(item);
@@ -1054,7 +1069,7 @@ function scrollToPdf(n, y = 0) {
   updPdfPos();
 }
 function updPdfPos() {
-  if (R.kind !== 'pdf' || !R.pages.length) return;
+  if (R.kind !== 'pdf' || !R.pages.length || !R.book || !R.pdf) return;
   const sc = $('#pdfScroll'), mid = sc.scrollTop + sc.clientHeight * .3;
   let lo = 1, hi = R.pdf.numPages;
   while (lo < hi) { const m = (lo + hi + 1) >> 1; if (R.pages[m].el.offsetTop <= mid) lo = m; else hi = m - 1; }
@@ -1180,7 +1195,7 @@ $('#pdfScroll').addEventListener('click', e => {
 });
 
 /* --- EPUB --- */
-async function openEpub(blob, item) {
+async function openEpub(blob, item, seq) {
   R.kind = 'epub';
   $('#pdfScroll').hidden = true; const box = $('#epubBox'); box.hidden = false; box.innerHTML = '';
   R.epub = ePub(await blob.arrayBuffer());
@@ -1203,9 +1218,11 @@ async function openEpub(blob, item) {
     saveBookPos();
   });
   await R.epub.ready;
+  if (seq !== R.seq) return;
   R.toc = flatToc(R.epub.navigation ? R.epub.navigation.toc : []);
   const cfi = item && item.loc ? item.loc.cfi : (R.book.pos && R.book.pos.cfi) || undefined;
   await R.rendition.display(cfi);
+  if (seq !== R.seq) return;
   for (const h of S.hls) if (h.bookId === R.book.id) addEpubMark(h);
   if (item) { R.flash = item.id; }
 }
@@ -1994,7 +2011,16 @@ $('#tabs').onclick = e => { const b = e.target.closest('[data-tab]'); if (b) { t
 $('#btnImport').onclick = () => $('#fileIn').click();
 $('#btnMenu').onclick = openMenu;
 $('#fileIn').onchange = e => { const f = e.target.files; importFiles(f).finally(() => e.target.value = ''); };
-$('#readBack').onclick = goBack;
+async function reloadApp() {
+  // riapre lo stesso libro o la stessa mappa dopo il ricaricamento
+  const where = view === 'read' && R.book ? { v: 'read', id: R.book.id } : view === 'map' && M.map ? { v: 'map', id: M.map.id } : { v: 'lib', tab };
+  lsSet('mg-resume', JSON.stringify({ ...where, t: Date.now() }));
+  if (R.book) { try { await save('books', R.book); } catch {} }
+  try { const reg = await navigator.serviceWorker.getRegistration(); if (reg) await Promise.race([reg.update(), new Promise(r => setTimeout(r, 2500))]); } catch {}
+  location.reload();
+}
+$$('[data-reload]').forEach(b => b.onclick = reloadApp);
+$('#readBack').onclick = () => { try { goBack(); } catch (e) { console.error(e); go('lib', false); } };
 $('#mapBack').onclick = () => { M.sel = M.selEdge = M.linking = null; goBack(); };
 $('#mapFit').onclick = fitMap;
 $('#mapName').onclick = async () => { const t = await askText('Rinomina mappa', M.map.name); if (t) { M.map.name = t; await save('maps', M.map); $('#mapName').textContent = t; } };
@@ -2047,7 +2073,25 @@ addEventListener('drop', e => {
   try { await openDB(); await loadAll(); const w = document.getElementById('dbwait'); if (w) w.remove(); }
   catch (e) { document.body.innerHTML = '<p style="padding:24px">Impossibile aprire la memoria locale. Se sei in navigazione privata, aprila in una scheda normale.</p>'; return; }
   renderLib();
-  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
+  try {
+    const r = JSON.parse(lsGet('mg-resume', 'null')); lsSet('mg-resume', 'null');
+    if (r && Date.now() - r.t < 120000) {
+      if (r.v === 'read' && S.books.some(b => b.id === r.id)) openBook(r.id, null, true);
+      else if (r.v === 'map' && S.maps.some(m => m.id === r.id)) openMap(r.id, null, true);
+      else if (r.tab) { tab = r.tab; renderLib(); }
+    }
+  } catch {}
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      reg.addEventListener('updatefound', () => {
+        const w = reg.installing; if (!w) return;
+        w.addEventListener('statechange', () => {
+          if (w.state === 'activated' && navigator.serviceWorker.controller) toast('Nuova versione di Margini pronta', 'Aggiorna', reloadApp, 0);
+        });
+      });
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) reg.update().catch(() => {}); });
+    }).catch(() => {});
+  }
 })();
 </script>
 </body>
