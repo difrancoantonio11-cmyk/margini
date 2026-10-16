@@ -150,7 +150,9 @@ svg.i{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stro
 .ocrpill{position:fixed;left:50%;top:calc(var(--bar) + var(--st) + 12px);transform:translateX(-50%);z-index:31;display:flex;align-items:center;gap:14px;background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:14px;font-weight:600;font-size:14px;box-shadow:var(--shadow);white-space:nowrap}
 .ocrpill button{color:var(--hl-yellow);font-weight:700}
 .textLayer ::selection{background:rgba(35,64,216,.28)}
-.textLayer .endOfContent{display:block;position:absolute;inset:100% 0 0;z-index:-1;cursor:default;user-select:none}
+.textLayer .endOfContent{display:block;position:absolute;inset:100% 0 0;z-index:0;cursor:default;-webkit-user-select:none;user-select:none}
+.textLayer.selecting .endOfContent{top:0}
+.textLayer span{z-index:1}
 #epubBox{flex:1;min-width:0;background:var(--paper)}
 #epubBox .mg-ul rect{stroke:transparent!important}
 #epubBox .mg-ul line{stroke:inherit!important;stroke-width:2.5px;stroke-opacity:1}
@@ -336,7 +338,7 @@ textarea.note:focus,input.txt:focus{border-color:var(--accent)}
 'use strict';
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'vendor/pdf.worker.min.js';
 
-const APP_VERSION = '1.6';
+const APP_VERSION = '1.7';
 /* ---------- utilità ---------- */
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -1022,7 +1024,7 @@ async function renderPage(n) {
   if (gen !== R.gen || !P.on) return;
   if (!tc.items.some(i => i.str && i.str.trim())) { scannedPage(n, tl, vp); return; }
   pdfjsLib.renderTextLayer({ textContentSource: tc, container: tl, viewport: vp, textDivs: [] });
-  const end = document.createElement('div'); end.className = 'endOfContent'; tl.appendChild(end);
+  addEndOfContent(tl);
 }
 function unrenderPage(n) {
   const P = R.pages[n]; if (!P || !P.on) return;
@@ -1100,6 +1102,32 @@ function setZoom(z) {
 })();
 
 // selezione testo nel PDF
+// Come pdf.js: un foglio invisibile segue la fine della selezione, così il dito
+// sugli spazi vuoti non fa saltare la selezione su un altro blocco di testo.
+const textLayers = new Map();
+let prevSelRange = null;
+function addEndOfContent(tl) {
+  const end = document.createElement('div'); end.className = 'endOfContent';
+  tl.appendChild(end); textLayers.set(tl, end);
+}
+document.addEventListener('selectionchange', () => {
+  for (const tl of textLayers.keys()) if (!tl.isConnected) textLayers.delete(tl);
+  const sel = document.getSelection();
+  const reset = (end, tl) => { tl.append(end); end.style.width = ''; end.style.height = ''; tl.classList.remove('selecting'); };
+  if (!sel || sel.rangeCount === 0) { textLayers.forEach(reset); prevSelRange = null; return; }
+  const range = sel.getRangeAt(0);
+  for (const [tl, end] of textLayers) { if (range.intersectsNode(tl)) tl.classList.add('selecting'); else reset(end, tl); }
+  const modifyStart = prevSelRange && (range.compareBoundaryPoints(Range.END_TO_END, prevSelRange) === 0 || range.compareBoundaryPoints(Range.START_TO_END, prevSelRange) === 0);
+  let anchor = modifyStart ? range.startContainer : range.endContainer;
+  if (anchor.nodeType === Node.TEXT_NODE) anchor = anchor.parentNode;
+  const tl = anchor && anchor.parentElement && anchor.parentElement.closest('.textLayer');
+  const end = tl && textLayers.get(tl);
+  if (end && anchor !== end && anchor.parentElement) {
+    end.style.width = tl.style.width; end.style.height = tl.style.height;
+    anchor.parentElement.insertBefore(end, modifyStart ? anchor : anchor.nextSibling);
+  }
+  prevSelRange = range.cloneRange();
+});
 let selT;
 document.addEventListener('selectionchange', () => {
   if (R.kind !== 'pdf') return;
@@ -1895,6 +1923,7 @@ function buildOcrLayer(tl, rec, W, H) {
     });
   }
   tl.appendChild(frag);
+  addEndOfContent(tl);
 }
 // chiamata da renderPage quando una pagina non ha testo
 function scannedPage(n, tl, vp) {
