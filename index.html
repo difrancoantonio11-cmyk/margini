@@ -142,7 +142,13 @@ svg.i{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stro
 .hlLayer .hl.flash{outline:3px solid var(--accent);outline-offset:2px;opacity:.75}
 .hlLayer .mark{position:absolute;right:6px;width:22px;height:30px;background:var(--accent);clip-path:polygon(0 0,100% 0,100% 100%,50% 75%,0 100%);opacity:.9}
 .textLayer{position:absolute;inset:0;overflow:hidden;line-height:1;text-size-adjust:none;-webkit-text-size-adjust:none;forced-color-adjust:none;transform-origin:0 0;z-index:2}
-.textLayer span,.textLayer br{color:transparent;position:absolute;white-space:pre;cursor:text;transform-origin:0% 0%}
+.textLayer span,.textLayer br{color:transparent;position:absolute;white-space:pre;cursor:text;transform-origin:0% 0%;-webkit-user-select:text;user-select:text}
+.page{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.textLayer{-webkit-user-drag:none}
+.ocrchip{position:absolute;top:12px;right:12px;z-index:3;display:flex;align-items:center;gap:6px;height:40px;padding:0 14px;border-radius:12px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:14px;box-shadow:var(--shadow-s)}
+.ocrchip svg.i{width:18px;height:18px}
+.ocrpill{position:fixed;left:50%;top:calc(var(--bar) + var(--st) + 12px);transform:translateX(-50%);z-index:31;display:flex;align-items:center;gap:14px;background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:14px;font-weight:600;font-size:14px;box-shadow:var(--shadow);white-space:nowrap}
+.ocrpill button{color:var(--hl-yellow);font-weight:700}
 .textLayer ::selection{background:rgba(35,64,216,.28)}
 .textLayer .endOfContent{display:block;position:absolute;inset:100% 0 0;z-index:-1;cursor:default;user-select:none}
 #epubBox{flex:1;min-width:0;background:var(--paper)}
@@ -283,6 +289,7 @@ textarea.note:focus,input.txt:focus{border-color:var(--accent)}
 
 <div id="selBar" hidden></div>
 <div id="inkBar" class="inkbar" hidden></div>
+<div id="ocrPill" class="ocrpill" hidden></div>
 <div id="sheetBack" hidden></div>
 <div id="toast" hidden></div>
 <div class="drop" id="drop" hidden>Rilascia qui PDF, EPUB o ZIP</div>
@@ -316,6 +323,7 @@ textarea.note:focus,input.txt:focus{border-color:var(--accent)}
     <symbol id="i-pen" viewBox="0 0 24 24"><path d="M4 20l1.2-4.6L16.5 4.1a2 2 0 0 1 2.8 0l.6.6a2 2 0 0 1 0 2.8L8.6 18.8zM14.5 6l3.5 3.5"/></symbol>
     <symbol id="i-eraser" viewBox="0 0 24 24"><path d="M8 20h12M5.5 14.5l8.8-8.8a2 2 0 0 1 2.8 0l2.2 2.2a2 2 0 0 1 0 2.8L12 18H8.5z"/></symbol>
     <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3"/></symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M8 10h8M8 14h5"/></symbol>
     <symbol id="i-expand" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/></symbol>
   </defs>
 </svg>
@@ -323,11 +331,12 @@ textarea.note:focus,input.txt:focus{border-color:var(--accent)}
 <script src="vendor/pdf.min.js"></script>
 <script src="vendor/jszip.min.js"></script>
 <script src="vendor/epub.min.js"></script>
+<script src="vendor/tesseract/tesseract.min.js"></script>
 <script>
 'use strict';
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'vendor/pdf.worker.min.js';
 
-const APP_VERSION = '1.5';
+const APP_VERSION = '1.6';
 /* ---------- utilità ---------- */
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -341,13 +350,14 @@ const fmtMB = b => (b / 1048576).toFixed(b > 104857600 ? 0 : 1) + ' MB';
 const debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
 
 /* ---------- database locale (IndexedDB) ---------- */
-const STORES = ['books', 'files', 'hls', 'nodes', 'links', 'maps', 'folders', 'inks'];
+const STORES = ['books', 'files', 'hls', 'nodes', 'links', 'maps', 'folders', 'inks', 'ocr'];
 let db;
 function openDB() {
   return new Promise((res, rej) => {
-    const r = indexedDB.open('margini', 3);
+    const r = indexedDB.open('margini', 4);
     r.onupgradeneeded = () => { const d = r.result; for (const s of STORES) if (!d.objectStoreNames.contains(s)) d.createObjectStore(s, { keyPath: 'id' }); };
-    r.onsuccess = () => { db = r.result; res(); };
+    r.onsuccess = () => { db = r.result; db.onversionchange = () => { db.close(); location.reload(); }; res(); };
+    r.onblocked = () => { document.body.insertAdjacentHTML('beforeend', '<div id="dbwait" style="position:fixed;inset:0;display:grid;place-items:center;background:var(--bg);z-index:99;padding:24px;text-align:center;font-weight:600">Sto aggiornando Margini. Se resta qui, chiudi le altre finestre aperte di Margini.</div>'); };
     r.onerror = () => rej(r.error);
   });
 }
@@ -358,7 +368,7 @@ const dbGet = (s, id) => wrap(os(s).get(id));
 const dbDel = (s, id) => wrap(os(s, 'readwrite').delete(id));
 const dbAll = s => wrap(os(s).getAll());
 
-const S = { books: [], hls: [], nodes: [], links: [], maps: [], folders: [], inks: [] };
+const S = { books: [], hls: [], nodes: [], links: [], maps: [], folders: [], inks: [], ocr: [] };
 async function loadAll() { for (const k of Object.keys(S)) S[k] = await dbAll(k); }
 async function save(store, obj) {
   await dbPut(store, obj);
@@ -553,7 +563,7 @@ async function makeCover(blob, type) {
 
 /* ---------- backup ---------- */
 async function restoreBackup(data, zip) {
-  for (const k of ['books', 'hls', 'nodes', 'links', 'maps', 'folders', 'inks']) for (const r of (data[k] || [])) await dbPut(k, r);
+  for (const k of ['books', 'hls', 'nodes', 'links', 'maps', 'folders', 'inks', 'ocr']) for (const r of (data[k] || [])) await dbPut(k, r);
   if (zip) for (const b of (data.books || [])) {
     const f = zip.file(`files/${b.id}.${b.type}`);
     if (f) await dbPut('files', { id: b.id, blob: new Blob([await f.async('arraybuffer')], { type: b.type === 'pdf' ? 'application/pdf' : 'application/epub+zip' }) });
@@ -752,6 +762,7 @@ function entryMenu(e) {
       if (!await askConfirm('Eliminare il libro?', `«${o.title}» e tutti i suoi appunti verranno eliminati da questo dispositivo.`)) return;
       for (const it of [...S.hls, ...S.nodes].filter(x => x.bookId === o.id)) await deleteItem(it.id);
       for (const r of S.inks.filter(x => x.bookId === o.id)) await remove('inks', r.id);
+      for (const r of S.ocr.filter(x => x.bookId === o.id)) await remove('ocr', r.id);
       await dbDel('files', o.id); await remove('books', o.id); toast('Libro eliminato');
     } else if (e.kind === 'map') {
       if (!await askConfirm('Eliminare la mappa?', `«${o.name}» verrà eliminata. Le note libere presenti solo qui verranno eliminate.`)) return;
@@ -946,6 +957,7 @@ function closeReader() {
   if (R.rendition) { try { R.rendition.destroy(); } catch {} }
   if (R.epub) { try { R.epub.destroy(); } catch {} }
   $('#pdfPages').innerHTML = ''; $('#epubBox').innerHTML = '';
+  if (OCR.job) OCR.job.stop = true;
   INK.on = false; $('#pdfScroll').classList.remove('pen'); $('#btnPen').classList.remove('on'); $('#inkBar').hidden = true;
   Object.assign(R, { book: null, kind: null, pdf: null, pages: [], obs: null, rendition: null, epub: null, pending: null, loc: null });
   hideSelBar();
@@ -1008,6 +1020,7 @@ async function renderPage(n) {
   if (gen !== R.gen || !P.on) return;
   const tc = await page.getTextContent();
   if (gen !== R.gen || !P.on) return;
+  if (!tc.items.some(i => i.str && i.str.trim())) { scannedPage(n, tl, vp); return; }
   pdfjsLib.renderTextLayer({ textContentSource: tc, container: tl, viewport: vp, textDivs: [] });
   const end = document.createElement('div'); end.className = 'endOfContent'; tl.appendChild(end);
 }
@@ -1825,6 +1838,128 @@ function mountPad(host, it, onSave) {
 }
 const inkImgHtml = it => it.inkImg ? `<img class="inkimg" src="${it.inkImg}" alt="Nota scritta a mano">` : '';
 
+/* ---------- riconoscimento del testo (OCR) per i PDF scansionati, tutto sul dispositivo ---------- */
+const OCR = { worker: null, loading: null, job: null, warned: new Set() };
+const ocrId = n => R.book.id + ':' + n;
+function ocrWorker() {
+  if (OCR.worker) return Promise.resolve(OCR.worker);
+  if (!OCR.loading) {
+    const base = new URL('vendor/tesseract/', location.href).href;
+    OCR.loading = Tesseract.createWorker('ita', 1, {
+      workerPath: base + 'worker.min.js', corePath: base, langPath: base + 'lang',
+      workerBlobURL: false, gzip: true, cacheMethod: 'none'
+    }).then(w => (OCR.worker = w)).catch(e => { OCR.loading = null; throw e; });
+  }
+  return OCR.loading;
+}
+async function pageHasText(n) {
+  const tc = await (await R.pdf.getPage(n)).getTextContent();
+  return tc.items.some(i => i.str && i.str.trim());
+}
+async function ocrPage(n) {
+  const w = await ocrWorker();
+  const page = await R.pdf.getPage(n);
+  const v0 = page.getViewport({ scale: 1 });
+  const vp = page.getViewport({ scale: Math.min(3, 1800 / v0.width) });
+  const cv = document.createElement('canvas');
+  cv.width = Math.floor(vp.width); cv.height = Math.floor(vp.height);
+  await page.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise;
+  const { data } = await w.recognize(cv, {}, { blocks: true, text: false, hocr: false, tsv: false });
+  const W = cv.width, H = cv.height, lines = [];
+  for (const b of data.blocks || []) for (const p of b.paragraphs || []) for (const l of p.lines || []) {
+    const ws = (l.words || []).filter(x => x.text && x.text.trim() && x.confidence > 20)
+      .map(x => [x.text.trim(), +(x.bbox.x0 / W).toFixed(5), +(x.bbox.y0 / H).toFixed(5), +((x.bbox.x1 - x.bbox.x0) / W).toFixed(5), +((x.bbox.y1 - x.bbox.y0) / H).toFixed(5)]);
+    if (ws.length) lines.push(ws);
+  }
+  cv.width = cv.height = 0;
+  const rec = { id: ocrId(n), bookId: R.book.id, page: n, lines };
+  await save('ocr', rec);
+  return rec;
+}
+const measureCtx = document.createElement('canvas').getContext('2d');
+function buildOcrLayer(tl, rec, W, H) {
+  tl.innerHTML = '';
+  const frag = document.createDocumentFragment();
+  for (const line of rec.lines) {
+    // altezza della riga uguale per tutte le parole: la selezione resta pulita
+    const top = Math.min(...line.map(w => w[2])), bot = Math.max(...line.map(w => w[2] + w[4]));
+    const fs = Math.max(4, (bot - top) * H * .9);
+    measureCtx.font = `${fs}px sans-serif`;
+    line.forEach(([t, x, , w], i) => {
+      const s = document.createElement('span');
+      s.textContent = t + (i < line.length - 1 ? ' ' : '\n');
+      s.style.cssText = `left:${x * W}px;top:${top * H}px;font-size:${fs}px;font-family:sans-serif`;
+      const mw = measureCtx.measureText(t).width || 1;
+      s.style.transform = `scaleX(${(w * W) / mw})`;
+      frag.appendChild(s);
+    });
+  }
+  tl.appendChild(frag);
+}
+// chiamata da renderPage quando una pagina non ha testo
+function scannedPage(n, tl, vp) {
+  const rec = S.ocr.find(x => x.id === ocrId(n));
+  if (rec) { buildOcrLayer(tl, rec, vp.width, vp.height); return; }
+  const P = R.pages[n];
+  if (!P.el.querySelector('.ocrchip')) {
+    const b = document.createElement('button');
+    b.className = 'ocrchip'; b.innerHTML = `${ic('scan')} Riconosci testo`;
+    b.onclick = e => { e.stopPropagation(); ocrMenu(n); };
+    P.el.appendChild(b);
+  }
+  if (!OCR.warned.has(R.book.id) && !OCR.job) {
+    OCR.warned.add(R.book.id);
+    toast('Questo PDF è una scansione: per evidenziare serve riconoscere il testo', 'Riconosci', () => ocrMenu(n), 9000);
+  }
+}
+function refreshPageText(n) {
+  const P = R.pages[n]; if (!P || !P.on) return;
+  const tl = P.el.querySelector('.textLayer'), rec = S.ocr.find(x => x.id === ocrId(n));
+  if (!tl || !rec) return;
+  const chip = P.el.querySelector('.ocrchip'); if (chip) chip.remove();
+  buildOcrLayer(tl, rec, parseFloat(P.el.style.width), parseFloat(P.el.style.height));
+}
+function ocrMenu(n) {
+  if (OCR.job) { toast('Riconoscimento già in corso'); return; }
+  const total = R.pdf.numPages;
+  const el = openSheet('Riconosci il testo', `<p style="margin:0 0 6px">Questa pagina è un'immagine: per poterla evidenziare, l'app deve leggere il testo. Lo fa sul tuo iPad, senza mandare niente fuori.</p>
+    <p class="muted" style="margin:0">La prima volta prepara il riconoscimento (circa 9 MB). Ogni pagina richiede qualche secondo e resta salvata.</p>
+    <div class="menu" style="margin-top:12px">
+      <button class="mi" data-a="one">${ic('scan')}<span>Solo questa pagina<small>Pagina ${n}</small></span></button>
+      <button class="mi" data-a="all">${ic('scan')}<span>Tutto il libro<small>${total} pagine · puoi continuare a leggere mentre lavora</small></span></button>
+    </div>`);
+  el.querySelector('[data-a=one]').onclick = () => { closeSheet(); runOcr([n]); };
+  el.querySelector('[data-a=all]').onclick = () => {
+    closeSheet();
+    const pages = [n]; for (let i = 1; i <= total; i++) if (i !== n) pages.push(i);
+    runOcr(pages, true);
+  };
+}
+async function runOcr(pages, checkText) {
+  const book = R.book, job = OCR.job = { stop: false, done: 0, total: pages.length, book: book.id };
+  const pill = $('#ocrPill');
+  const show = msg => { pill.hidden = false; pill.innerHTML = `<span>${esc(msg)}</span><button>Ferma</button>`; pill.querySelector('button').onclick = () => { job.stop = true; show('Mi fermo dopo questa pagina…'); }; };
+  show('Preparo il riconoscimento del testo…');
+  try {
+    await ocrWorker();
+    for (const n of pages) {
+      if (job.stop || R.book !== book) break;
+      job.done++;
+      if (S.ocr.some(x => x.id === ocrId(n))) continue;
+      if (checkText && await pageHasText(n)) continue;
+      show(pages.length === 1 ? `Leggo la pagina ${n}…` : `Leggo il testo: pagina ${job.done} di ${job.total}`);
+      await ocrPage(n);
+      if (R.book === book) refreshPageText(n);
+    }
+    toast(job.stop || R.book !== book ? 'Riconoscimento fermato: riprendi quando vuoi' : pages.length === 1 ? 'Testo riconosciuto: ora puoi selezionarlo' : 'Testo riconosciuto in tutto il libro');
+  } catch (e) {
+    console.error(e);
+    toast(R.book !== book ? 'Riconoscimento fermato: riprendi quando vuoi' : 'Riconoscimento non riuscito. Serve internet la prima volta.');
+  } finally {
+    OCR.job = null; pill.hidden = true;
+  }
+}
+
 /* ---------- eventi interfaccia ---------- */
 $('#tabs').onclick = e => { const b = e.target.closest('[data-tab]'); if (b) { tab = b.dataset.tab; renderLib(); $('#libScroll').scrollTop = 0; } };
 $('#btnImport').onclick = () => $('#fileIn').click();
@@ -1865,15 +2000,22 @@ addEventListener('resize', debounce(() => {
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyEpubTheme);
 addEventListener('keydown', e => { if (e.key === 'Escape') { if (sheetClose) closeSheet(); else hideSelBar(); } });
 // trascina file (comodo dal PC)
-let dragN = 0;
-addEventListener('dragenter', e => { if (e.dataTransfer && [...e.dataTransfer.types].includes('Files')) { dragN++; $('#drop').hidden = false; } });
+let dragN = 0, innerDrag = false;
+addEventListener('dragstart', () => { innerDrag = true; });
+addEventListener('dragend', () => { innerDrag = false; });
+const outerFiles = e => !innerDrag && view === 'lib' && e.dataTransfer && [...e.dataTransfer.types].includes('Files');
+addEventListener('dragenter', e => { if (outerFiles(e)) { dragN++; $('#drop').hidden = false; } });
 addEventListener('dragleave', () => { if (--dragN <= 0) { dragN = 0; $('#drop').hidden = true; } });
 addEventListener('dragover', e => e.preventDefault());
-addEventListener('drop', e => { e.preventDefault(); dragN = 0; $('#drop').hidden = true; if (e.dataTransfer.files.length) importFiles(e.dataTransfer.files); });
+addEventListener('drop', e => {
+  e.preventDefault(); dragN = 0; $('#drop').hidden = true;
+  const ok = outerFiles(e); innerDrag = false;
+  if (ok && e.dataTransfer.files.length) importFiles(e.dataTransfer.files);
+});
 
 /* ---------- avvio ---------- */
 (async () => {
-  try { await openDB(); await loadAll(); }
+  try { await openDB(); await loadAll(); const w = document.getElementById('dbwait'); if (w) w.remove(); }
   catch (e) { document.body.innerHTML = '<p style="padding:24px">Impossibile aprire la memoria locale. Se sei in navigazione privata, aprila in una scheda normale.</p>'; return; }
   renderLib();
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
